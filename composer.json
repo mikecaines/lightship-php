@@ -1,0 +1,30 @@
+{
+  "name": "mikecaines/lightship-php",
+
+  "support": {
+    "source": "https://github.com/mikecaines/lightship-php.git"
+  },
+
+  "autoload": {
+    "psr-4": {
+      "Lightship\\": "src/Lightship"
+    }
+  },
+
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/mikecaines/batten-php.git"
+    },
+
+    {
+      "type": "vcs",
+      "url": "https://github.com/mikecaines/ok-kit-php.git"
+    }
+  ],
+
+  "require": {
+    "mikecaines/batten-php": "dev-master",
+    "mikecaines/ok-kit-php": "dev-master"
+  }
+}
