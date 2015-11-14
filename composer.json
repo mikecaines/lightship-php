@@ -25,6 +25,7 @@
 
   "require": {
     "mikecaines/batten-php": "dev-master",
-    "mikecaines/ok-kit-php": "dev-master"
+    "mikecaines/ok-kit-php": "dev-master",
+    "mikecaines/lightship-js": "dev-master"
   }
 }
