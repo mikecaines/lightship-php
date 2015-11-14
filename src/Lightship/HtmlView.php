@@ -43,9 +43,9 @@ abstract class HtmlView extends View {
 		$includes->addFile($appWebPath . '/deps/mikecaines/batten-js/src/Batten/ComponentResolver.js', ['bundleKey' => 'app']);
 		$includes->addFile($appWebPath . '/deps/mikecaines/batten-js/src/Batten/EventTarget.js', ['bundleKey' => 'app']);
 		$includes->addFile($appWebPath . '/deps/mikecaines/batten-js/src/Batten/Model.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/mikecaines/lightship-js/src/Lightship/Environment.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/mikecaines/lightship-js/src/Lightship/Controller.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/mikecaines/lightship-js/src/Lightship/HttpMux.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Lightship/Environment.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Lightship/Controller.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Lightship/HttpMux.js', ['bundleKey' => 'app']);
 
 		$moduleCode = $this->getCode();
 		$chain = $this->getController()->getChain($moduleCode);
