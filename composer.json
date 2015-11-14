@@ -1,8 +1,8 @@
 {
-  "name": "mikecaines/lightship-php",
+  "name": "solarfield/lightship-php",
 
   "support": {
-    "source": "https://github.com/mikecaines/lightship-php.git"
+    "source": "https://github.com/solarfield/lightship-php.git"
   },
 
   "autoload": {
@@ -20,6 +20,11 @@
     {
       "type": "vcs",
       "url": "https://github.com/mikecaines/ok-kit-php.git"
+    },
+
+    {
+      "type": "vcs",
+      "url": "https://github.com/mikecaines/lightship-js.git"
     }
   ],
 
