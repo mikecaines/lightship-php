@@ -24,13 +24,13 @@
 
     {
       "type": "vcs",
-      "url": "https://github.com/mikecaines/lightship-js.git"
+      "url": "https://github.com/solarfield/lightship-js.git"
     }
   ],
 
   "require": {
     "mikecaines/batten-php": "dev-master",
     "mikecaines/ok-kit-php": "dev-master",
-    "mikecaines/lightship-js": "dev-master"
+    "solarfield/lightship-js": "dev-master"
   }
 }
