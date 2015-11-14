@@ -25,7 +25,32 @@ abstract class Environment extends \Batten\Environment {
 	static public function init($aOptions) {
 		parent::init($aOptions);
 
+		error_reporting(E_ALL | E_STRICT);
+
 		self::$config = array_key_exists('config', $aOptions) ? $aOptions['config'] : [];
+
+
+		//init projectPackageFilePath
+
+		if (!array_key_exists('projectPackageFilePath', $aOptions)) {
+			throw new Exception(
+				"The projectPackageFilePath option must be specified when calling " . __METHOD__ . "."
+			);
+		}
+
+		$path = realpath($aOptions['projectPackageFilePath']);
+
+		if (!$path) {
+			throw new Exception(
+				"Invalid projectPackageFilePath: '" . $aOptions['projectPackageFilePath'] . "'."
+			);
+		}
+
+		static::getVars()->add('projectPackageFilePath', $path);
+
+
+		//set the php error log path
+		ini_set('error_log', static::getVars()->get('projectPackageFilePath') . '/files/logs/php/php.log');
 
 
 		//init composerVendorFilePath
