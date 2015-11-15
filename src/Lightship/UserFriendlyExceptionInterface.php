@@ -2,5 +2,5 @@
 namespace Lightship;
 
 interface UserFriendlyExceptionInterface {
-    function getUserFriendlyMessage();
+	function getUserFriendlyMessage();
 }
