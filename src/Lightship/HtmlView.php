@@ -34,7 +34,6 @@ abstract class HtmlView extends View {
 		$includes = $this->getScriptIncludes();
 		$appWebPath = Env::getVars()->get('appPackageWebPath');
 
-		$includes->addFile($appWebPath . '/deps/modernizr/modernizr/modernizr.custom.js', ['bundleKey' => 'app']);
 		$includes->addFile($appWebPath . '/deps/solarfield/ok-kit-js/src/Ok/ok.js', ['bundleKey' => 'app']);
 		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Batten/Environment.js', ['bundleKey' => 'app']);
 		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Batten/Controller.js', ['bundleKey' => 'app']);
