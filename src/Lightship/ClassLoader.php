@@ -5,7 +5,7 @@ use App\Environment as Env;
 use Exception;
 use Ok\MiscUtils;
 
-require_once \App\DEPENDENCIES_FILE_PATH . '/mikecaines/ok-kit-php/src/Ok/MiscUtils.php';
+require_once \App\DEPENDENCIES_FILE_PATH . '/solarfield/ok-kit-php/src/Ok/MiscUtils.php';
 
 class ClassLoader {
 	/**

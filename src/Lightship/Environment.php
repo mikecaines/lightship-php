@@ -3,7 +3,7 @@ namespace Lightship;
 
 use Exception;
 
-require_once \App\DEPENDENCIES_FILE_PATH . '/mikecaines/batten-php/src/Batten/Environment.php';
+require_once \App\DEPENDENCIES_FILE_PATH . '/solarfield/batten-php/src/Batten/Environment.php';
 
 abstract class Environment extends \Batten\Environment {
 	static private $config;

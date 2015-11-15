@@ -35,14 +35,14 @@ abstract class HtmlView extends View {
 		$appWebPath = Env::getVars()->get('appPackageWebPath');
 
 		$includes->addFile($appWebPath . '/deps/modernizr/modernizr/modernizr.custom.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/mikecaines/ok-kit-js/src/Ok/ok.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/mikecaines/batten-js/src/Batten/Environment.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/mikecaines/batten-js/src/Batten/Controller.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/mikecaines/batten-js/src/Batten/ControllerPlugin.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/mikecaines/batten-js/src/Batten/ControllerPlugins.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/mikecaines/batten-js/src/Batten/ComponentResolver.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/mikecaines/batten-js/src/Batten/EventTarget.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/mikecaines/batten-js/src/Batten/Model.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/ok-kit-js/src/Ok/ok.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Batten/Environment.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Batten/Controller.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Batten/ControllerPlugin.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Batten/ControllerPlugins.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Batten/ComponentResolver.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Batten/EventTarget.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Batten/Model.js', ['bundleKey' => 'app']);
 		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Lightship/Environment.js', ['bundleKey' => 'app']);
 		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Lightship/Controller.js', ['bundleKey' => 'app']);
 		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Lightship/HttpMux.js', ['bundleKey' => 'app']);
