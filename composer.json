@@ -11,6 +11,10 @@
 		}
 	},
 
+	"bin": [
+		"bin/lightship.phar"
+	],
+
 	"repositories": [
 		{
 			"type": "vcs",
