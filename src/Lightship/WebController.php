@@ -206,18 +206,18 @@ abstract class WebController extends \Batten\Controller {
 		//log the error
 		Env::getLogger()->error($aEx);
 
-		//reboot to the 'Boom' module.
-		//We use the boom module to present error messages to the client
+		//reboot to the 'Error' module.
+		//We use the Error module to present error messages to the client
 		static::reboot(
 			[
-				'moduleCode' => 'Boom', //boot to the 'Boom' module
+				'moduleCode' => 'Error', //boot to the 'Error' module
 				'nextRoute' => static::getInitialRoute(), //process the entire route again
 			],
 
 			//specify some initial model data, such as the exception we are handling
 			[
 				'app' => [
-					'boom' => [
+					'errorState' => [
 						'error' => $aEx,
 					]
 				]
