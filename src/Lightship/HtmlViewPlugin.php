@@ -5,7 +5,7 @@ namespace Lightship;
  * @method HtmlView getView()
  */
 class HtmlViewPlugin extends \Batten\ViewPlugin {
-	public function __construct(HtmlView $aView, $aCode) {
-		parent::__construct($aView, $aCode);
+	public function __construct(HtmlView $aView, $aComponentCode, $aInstallationCode) {
+		parent::__construct($aView, $aComponentCode, $aInstallationCode);
 	}
 }
