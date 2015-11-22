@@ -27,19 +27,6 @@ abstract class WebController extends \Batten\Controller {
 
 	private $redirecting = false;
 
-	protected function resolvePlugins() {
-		parent::resolvePlugins();
-
-		$plugins = $this->getPlugins();
-
-		if (($plugin = $plugins->register('DiskCache', 'app-public-disk-cache'))) {
-			$plugin->getOptions()->set('cacheDirUrl', '/files/cache');
-		}
-
-		$plugins->register('StyleIncludeProcessor', 'app-style-include-processor');
-		$plugins->register('ScriptIncludeProcessor', 'app-script-include-processor');
-	}
-
 	protected function resolveOptions() {
 		parent::resolveOptions();
 
