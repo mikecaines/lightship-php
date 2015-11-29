@@ -4,8 +4,8 @@ namespace Lightship;
 use App\Environment as Env;
 use Batten\Event;
 use Batten\Reflector;
-use Ok\HtmlUtils;
-use Ok\JsonUtils;
+use Solarfield\Ok\HtmlUtils;
+use Solarfield\Ok\JsonUtils;
 
 abstract class HtmlView extends View {
 	private $styleIncludes;

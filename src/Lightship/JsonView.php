@@ -4,8 +4,8 @@ namespace Lightship;
 use Batten\Event;
 use Batten\Options;
 use Batten\Reflector;
-use Ok\JsonUtils;
-use Ok\StructUtils;
+use Solarfield\Ok\JsonUtils;
+use Solarfield\Ok\StructUtils;
 
 class JsonView extends View {
 	private $rules;

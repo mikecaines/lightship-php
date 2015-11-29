@@ -1,7 +1,7 @@
 <?php
 namespace Lightship;
 
-use Ok\StructUtils;
+use Solarfield\Ok\StructUtils;
 
 class TerminalInput implements \Batten\InputInterface {
 	private $data = [];

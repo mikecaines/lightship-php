@@ -2,7 +2,7 @@
 namespace Lightship;
 
 use App\Environment as Env;
-use Ok\StructUtils;
+use Solarfield\Ok\StructUtils;
 
 abstract class TerminalController extends \Batten\Controller {
 	static public function getInitialRoute() {

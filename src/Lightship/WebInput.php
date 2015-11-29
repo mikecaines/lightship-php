@@ -1,8 +1,8 @@
 <?php
 namespace Lightship;
 
-use Ok\StringUtils;
-use Ok\StructUtils;
+use Solarfield\Ok\StringUtils;
+use Solarfield\Ok\StructUtils;
 
 class WebInput implements \Batten\InputInterface {
 	private $data = [];

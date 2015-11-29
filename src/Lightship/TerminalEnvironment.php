@@ -1,7 +1,7 @@
 <?php
 namespace Lightship;
 
-use Ok\StructUtils;
+use Solarfield\Ok\StructUtils;
 
 require_once __DIR__ . '/Environment.php';
 

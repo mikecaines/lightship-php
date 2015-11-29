@@ -5,7 +5,7 @@ use App\Environment as Env;
 use Batten\Event;
 use Batten\Reflector;
 use Batten\StandardOutputEvent;
-use Ok\Url;
+use Solarfield\Ok\Url;
 
 /**
  * Class WebController

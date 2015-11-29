@@ -3,9 +3,9 @@ namespace Lightship;
 
 use App\Environment as Env;
 use Exception;
-use Ok\MiscUtils;
+use Solarfield\Ok\MiscUtils;
 
-require_once \App\DEPENDENCIES_FILE_PATH . '/solarfield/ok-kit-php/src/Ok/MiscUtils.php';
+require_once \App\DEPENDENCIES_FILE_PATH . '/solarfield/ok-kit-php/src/Solarfield/Ok/MiscUtils.php';
 
 class ClassLoader {
 	/**
