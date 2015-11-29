@@ -7,7 +7,7 @@ class ClientSideIncludes {
 
 	public function addFile($aUrl, $aOptions = array()) {
 		$options = array_replace([
-			'group' => 0,
+			'group' => 2000000,
 			'bundleKey' => null,
 			'onlyIfExists' => false,
 			'base' => null, //null, 'app', 'module'

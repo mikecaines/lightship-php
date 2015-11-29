@@ -34,28 +34,32 @@ abstract class HtmlView extends View {
 		$includes = $this->getScriptIncludes();
 		$appWebPath = Env::getVars()->get('appPackageWebPath');
 
-		$includes->addFile($appWebPath . '/deps/solarfield/ok-kit-js/src/Solarfield/Ok/ok.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/Environment.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/Controller.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/ControllerPlugin.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/ControllerPlugins.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/ComponentResolver.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/EventTarget.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/Model.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Solarfield/Lightship/Environment.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Solarfield/Lightship/Controller.js', ['bundleKey' => 'app']);
-		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Solarfield/Lightship/HttpMux.js', ['bundleKey' => 'app']);
+		$includes->addFile($appWebPath . '/deps/solarfield/ok-kit-js/src/Solarfield/Ok/ok.js', [
+			'bundleKey' => 'app',
+			'group' => 250000,
+		]);
+
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/Environment.js', ['bundleKey' => 'app', 'group'=>500000]);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/Controller.js', ['bundleKey' => 'app', 'group'=>500000]);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/ControllerPlugin.js', ['bundleKey' => 'app', 'group'=>500000]);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/ControllerPlugins.js', ['bundleKey' => 'app', 'group'=>500000]);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/ComponentResolver.js', ['bundleKey' => 'app', 'group'=>500000]);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/EventTarget.js', ['bundleKey' => 'app', 'group'=>500000]);
+		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/Model.js', ['bundleKey' => 'app', 'group'=>500000]);
+		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Solarfield/Lightship/Environment.js', ['bundleKey' => 'app', 'group'=>500000]);
+		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Solarfield/Lightship/Controller.js', ['bundleKey' => 'app', 'group'=>500000]);
+		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Solarfield/Lightship/HttpMux.js', ['bundleKey' => 'app', 'group'=>500000]);
 
 		$moduleCode = $this->getCode();
 		$chain = $this->getController()->getChain($moduleCode);
 
 		$includes->addFile($appWebPath . '/App/Environment.js', [
-			'group' => 1500,
+			'group' => 1000000,
 			'bundleKey' => 'app',
 		]);
 
 		$includes->addFile($appWebPath . '/App/Controller.js', [
-			'group' => 1500,
+			'group' => 1000000,
 			'bundleKey' => 'app',
 		]);
 
@@ -64,7 +68,7 @@ abstract class HtmlView extends View {
 			$includes->addFile('/Controller.js', [
 				'base' => 'module',
 				'onlyIfExists' => true,
-				'group' => 2500,
+				'group' => 1250000,
 				'bundleKey' => 'module',
 			]);
 		}
