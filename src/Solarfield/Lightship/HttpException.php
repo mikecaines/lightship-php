@@ -1,5 +1,5 @@
 <?php
-namespace Lightship;
+namespace Solarfield\Lightship;
 
 class HttpException extends \Exception implements HttpExceptionInterface {
 	private $httpCode;

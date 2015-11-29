@@ -1,5 +1,5 @@
 <?php
-namespace Lightship;
+namespace Solarfield\Lightship;
 
 use Solarfield\Ok\StringUtils;
 use Solarfield\Ok\StructUtils;

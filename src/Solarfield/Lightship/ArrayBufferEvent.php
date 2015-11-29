@@ -1,5 +1,5 @@
 <?php
-namespace Lightship;
+namespace Solarfield\Lightship;
 
 class ArrayBufferEvent extends \Batten\Event {
 	public $buffer;

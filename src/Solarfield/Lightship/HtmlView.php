@@ -1,5 +1,5 @@
 <?php
-namespace Lightship;
+namespace Solarfield\Lightship;
 
 use App\Environment as Env;
 use Batten\Event;
@@ -134,7 +134,7 @@ abstract class HtmlView extends View {
 
 		$items = $includes->getResolvedFiles();
 
-		/** @var \Lightship\CsiProcessor\Plugins\StyleIncludeProcessor\HtmlViewPlugin $styleIncludeProxyView */
+		/** @var \Solarfield\Lightship\CsiProcessor\Plugins\StyleIncludeProcessor\HtmlViewPlugin $styleIncludeProxyView */
 		$styleIncludeProxyView = $this->getPlugins()->get('app-style-include-processor');
 
 		if ($styleIncludeProxyView) {
@@ -182,7 +182,7 @@ abstract class HtmlView extends View {
 
 		$items = $includes->getResolvedFiles();
 
-		/** @var \Lightship\CsiProcessor\Plugins\ScriptIncludeProcessor\HtmlViewPlugin $scriptIncludeProxyView */
+		/** @var \Solarfield\Lightship\CsiProcessor\Plugins\ScriptIncludeProcessor\HtmlViewPlugin $scriptIncludeProxyView */
 		$scriptIncludeProxyView = $this->getPlugins()->get('app-script-include-processor');
 
 		if ($scriptIncludeProxyView) {
