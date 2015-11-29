@@ -2,7 +2,7 @@
 namespace Solarfield\Lightship;
 
 use App\Environment as Env;
-use Batten\StandardOutputEvent;
+use Solarfield\Batten\StandardOutputEvent;
 
 class StdoutView extends View {
 	public function handleStandardOutput(StandardOutputEvent $aEvt) {

@@ -1,10 +1,10 @@
 <?php
 namespace Solarfield\Lightship;
 
-use Batten\Event;
-use Batten\Reflector;
+use Solarfield\Batten\Event;
+use Solarfield\Batten\Reflector;
 
-abstract class View extends \Batten\View {
+abstract class View extends \Solarfield\Batten\View {
 	protected function resolveHints() {
 		parent::resolveHints();
 

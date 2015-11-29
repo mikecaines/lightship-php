@@ -1,6 +1,6 @@
 <?php
 namespace Solarfield\Lightship;
 
-class JsonViewPlugin extends \Batten\ViewPlugin {
+class JsonViewPlugin extends \Solarfield\Batten\ViewPlugin {
 	
 }

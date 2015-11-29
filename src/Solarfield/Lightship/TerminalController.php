@@ -4,7 +4,7 @@ namespace Solarfield\Lightship;
 use App\Environment as Env;
 use Solarfield\Ok\StructUtils;
 
-abstract class TerminalController extends \Batten\Controller {
+abstract class TerminalController extends \Solarfield\Batten\Controller {
 	static public function getInitialRoute() {
 		$route = null;
 

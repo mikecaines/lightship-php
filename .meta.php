@@ -9,5 +9,5 @@ namespace App {
 
 	define('App\DEBUG', false);
 	define('App\DEPENDENCIES_FILE_PATH', realpath(__DIR__ . '/../../'));
-	abstract class Environment extends \Batten\Environment {}
+	abstract class Environment extends \Solarfield\Batten\Environment {}
 }

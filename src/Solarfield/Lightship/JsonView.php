@@ -1,9 +1,9 @@
 <?php
 namespace Solarfield\Lightship;
 
-use Batten\Event;
-use Batten\Options;
-use Batten\Reflector;
+use Solarfield\Batten\Event;
+use Solarfield\Batten\Options;
+use Solarfield\Batten\Reflector;
 use Solarfield\Ok\JsonUtils;
 use Solarfield\Ok\StructUtils;
 

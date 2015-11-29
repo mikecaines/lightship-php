@@ -100,7 +100,7 @@ class ClientSideIncludes {
 		return $resolvedItems;
 	}
 
-	public function __construct(\Batten\View $aView) {
+	public function __construct(\Solarfield\Batten\View $aView) {
 		$this->view = $aView;
 	}
 

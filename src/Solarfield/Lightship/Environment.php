@@ -3,9 +3,9 @@ namespace Solarfield\Lightship;
 
 use Exception;
 
-require_once \App\DEPENDENCIES_FILE_PATH . '/solarfield/batten-php/src/Batten/Environment.php';
+require_once \App\DEPENDENCIES_FILE_PATH . '/solarfield/batten-php/src/Solarfield/Batten/Environment.php';
 
-abstract class Environment extends \Batten\Environment {
+abstract class Environment extends \Solarfield\Batten\Environment {
 	static private $config;
 	static private $classLoader;
 

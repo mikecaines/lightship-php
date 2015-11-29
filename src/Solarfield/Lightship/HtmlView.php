@@ -2,8 +2,8 @@
 namespace Solarfield\Lightship;
 
 use App\Environment as Env;
-use Batten\Event;
-use Batten\Reflector;
+use Solarfield\Batten\Event;
+use Solarfield\Batten\Reflector;
 use Solarfield\Ok\HtmlUtils;
 use Solarfield\Ok\JsonUtils;
 

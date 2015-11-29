@@ -2,16 +2,16 @@
 namespace Solarfield\Lightship;
 
 use App\Environment as Env;
-use Batten\Event;
-use Batten\Reflector;
-use Batten\StandardOutputEvent;
+use Solarfield\Batten\Event;
+use Solarfield\Batten\Reflector;
+use Solarfield\Batten\StandardOutputEvent;
 use Solarfield\Ok\Url;
 
 /**
  * Class WebController
- * @method \Batten\Model getModel
+ * @method \Solarfield\Batten\Model getModel
  */
-abstract class WebController extends \Batten\Controller {
+abstract class WebController extends \Solarfield\Batten\Controller {
 	static public function boot() {
 		header('X-Request-Guid: ' . Env::getVars()->get('requestId'));
 

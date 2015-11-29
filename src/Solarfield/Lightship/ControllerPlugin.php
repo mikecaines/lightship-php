@@ -1,6 +1,6 @@
 <?php
 namespace Solarfield\Lightship;
 
-class ControllerPlugin extends \Batten\ControllerPlugin {
+class ControllerPlugin extends \Solarfield\Batten\ControllerPlugin {
 
 }

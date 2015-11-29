@@ -3,7 +3,7 @@ namespace Solarfield\Lightship;
 
 use Solarfield\Ok\StructUtils;
 
-class TerminalInput implements \Batten\InputInterface {
+class TerminalInput implements \Solarfield\Batten\InputInterface {
 	private $data = [];
 
 	public function getAsString($aPath) {
