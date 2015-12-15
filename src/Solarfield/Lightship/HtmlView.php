@@ -10,6 +10,7 @@ use Solarfield\Ok\JsonUtils;
 abstract class HtmlView extends View {
 	private $styleIncludes;
 	private $scriptIncludes;
+	private $jsSystemConfig;
 
 	protected function resolveHints() {
 		$hints = $this->getHints();
@@ -34,31 +35,17 @@ abstract class HtmlView extends View {
 		$includes = $this->getScriptIncludes();
 		$appWebPath = Env::getVars()->get('appPackageWebPath');
 
-		$includes->addFile($appWebPath . '/deps/solarfield/ok-kit-js/src/Solarfield/Ok/ok.js', [
-			'bundleKey' => 'app',
-			'group' => 250000,
-		]);
-
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/Environment.js', ['bundleKey' => 'app', 'group'=>500000]);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/Controller.js', ['bundleKey' => 'app', 'group'=>500000]);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/ControllerPlugin.js', ['bundleKey' => 'app', 'group'=>500000]);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/ControllerPlugins.js', ['bundleKey' => 'app', 'group'=>500000]);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/ComponentResolver.js', ['bundleKey' => 'app', 'group'=>500000]);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/EventTarget.js', ['bundleKey' => 'app', 'group'=>500000]);
-		$includes->addFile($appWebPath . '/deps/solarfield/batten-js/src/Solarfield/Batten/Model.js', ['bundleKey' => 'app', 'group'=>500000]);
-		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Solarfield/Lightship/Environment.js', ['bundleKey' => 'app', 'group'=>500000]);
-		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Solarfield/Lightship/Controller.js', ['bundleKey' => 'app', 'group'=>500000]);
-		$includes->addFile($appWebPath . '/deps/solarfield/lightship-js/src/Solarfield/Lightship/HttpMux.js', ['bundleKey' => 'app', 'group'=>500000]);
-
 		$moduleCode = $this->getCode();
 		$chain = $this->getController()->getChain($moduleCode);
 
 		$includes->addFile($appWebPath . '/App/Environment.js', [
+			'loadMethod' => 'dynamic',
 			'group' => 1000000,
 			'bundleKey' => 'app',
 		]);
 
 		$includes->addFile($appWebPath . '/App/Controller.js', [
+			'loadMethod' => 'dynamic',
 			'group' => 1000000,
 			'bundleKey' => 'app',
 		]);
@@ -66,6 +53,7 @@ abstract class HtmlView extends View {
 		$moduleLink = array_key_exists('module', $chain) ? $chain['module'] : null;
 		if ($moduleLink) {
 			$includes->addFile('/Controller.js', [
+				'loadMethod' => 'dynamic',
 				'base' => 'module',
 				'onlyIfExists' => true,
 				'group' => 1250000,
@@ -80,6 +68,42 @@ abstract class HtmlView extends View {
 		}
 	}
 
+	/**
+	 * Resolves the data passed to JS System.config()
+	 * All contents must be JSON serializable.
+	 */
+	protected function resolveJsSystemConfig() {
+		$appPackageWebPath = Env::getVars()->get('appPackageWebPath');
+		$depsPath = Env::getVars()->get('appDependenciesWebPath');
+
+		$this->getJsSystemConfig()->merge([
+			'meta' => [
+				"$depsPath/solarfield/batten-js/*" => [
+					'format' => 'amd',
+				],
+
+				"$depsPath/solarfield/lightship-js/*" => [
+					'format' => 'amd',
+				],
+
+				"$depsPath/solarfield/ok-kit-js/*" => [
+					'format' => 'amd',
+				],
+
+				"$appPackageWebPath/App/*" => [
+					'format' => 'amd',
+				],
+			],
+
+			'paths' => [
+				'solarfield/batten-js/*' => "$depsPath/solarfield/batten-js/*.js",
+				'solarfield/lightship-js/*' => "$depsPath/solarfield/lightship-js/*.js",
+				'solarfield/ok-kit-js/*' => "$depsPath/solarfield/ok-kit-js/*.js",
+				'app/App/*' => "$appPackageWebPath/App/*.js",
+			],
+		]);
+	}
+
 	public function createDocument() {
 		ob_start();
 
@@ -90,7 +114,6 @@ abstract class HtmlView extends View {
 
 			<body>
 				<?php
-				echo($this->createBootstrapScript());
 				echo($this->createBodyContent());
 				?>
 			</body>
@@ -111,7 +134,10 @@ abstract class HtmlView extends View {
 		<?php
 
 		echo($this->createStyleElements());
+
+		echo($this->createInitScriptElements());
 		echo($this->createScriptElements());
+		echo($this->createBootstrapScriptElements());
 
 		return ob_get_clean();
 	}
@@ -192,15 +218,30 @@ abstract class HtmlView extends View {
 		return $items;
 	}
 
+	/**
+	 * Creates <script> elements from the resolved script includes.
+	 * The elements will be output between init/early and bootstrap/late.
+	 * If a client side include specifies loadMethod=dynamic, a data-src attribute will be used,
+	 * and the script will be handled by System.import later.
+	 * @return string
+	 */
 	public function createScriptElements() {
 		$items = $this->getFinalScriptIncludes();
 
 		ob_start();
 
 		foreach ($items as $item) {
-			?>
-			<script type="text/javascript" src="<?php $this->out($item['resolvedUrl']); ?>"></script>
-			<?php
+			if ($item['loadMethod'] == 'static') {
+				?>
+				<script type="text/javascript" src="<?php $this->out($item['resolvedUrl']); ?>"></script>
+				<?php
+			}
+
+			else if ($item['loadMethod'] == 'dynamic') {
+				?>
+				<script type="text/javascript" data-src="<?php $this->out($item['resolvedUrl']); ?>"></script>
+				<?php
+			}
 		}
 
 		if (Reflector::inSurfaceOrModuleMethodCall()) {
@@ -216,7 +257,54 @@ abstract class HtmlView extends View {
 		return ob_get_clean();
 	}
 
-	public function createBootstrapScript() {
+	/**
+	 * Gets the data that will be passed to System.config().
+	 * @return JsSystemConfig
+	 * @see resolveJsSystemConfig()
+	 */
+	public function getJsSystemConfig() {
+		if (!$this->jsSystemConfig) {
+			$this->jsSystemConfig = new JsSystemConfig();
+		}
+
+		return $this->jsSystemConfig;
+	}
+
+	/**
+	 * Creates early-output <script> elements used to set up the script environment.
+	 * @return mixed|string
+	 * @throws \Exception
+	 */
+	public function createInitScriptElements() {
+		$this->resolveJsSystemConfig();
+
+		$depsPath = Env::getVars()->get('appDependenciesWebPath');
+
+		ob_start();
+
+		?>
+		<script type="text/javascript" src="<?php $this->out($depsPath . '/systemjs/systemjs/dist/system-csp-production.js'); ?>" class="appBootstrapScript"></script>
+
+		<script type="text/javascript" class="appBootstrapScript">
+			System.config(<?php echo(JsonUtils::toJson($this->getJsSystemConfig())) ?>);
+
+			window.define = System.amdDefine;
+			window.require = System.amdRequire;
+		</script>
+		<?php
+
+		$html = ob_get_clean();
+		$html = str_replace("\n", '', $html);
+		$html = preg_replace('/\s{2,}/', '', $html);
+
+		return $html;
+	}
+
+	/**
+	 * Creates late-output <script> elements used to bootstrap the script environment.
+	 * @return mixed|string
+	 */
+	public function createBootstrapScriptElements() {
 		$model = $this->getModel();
 		$serverData = $model->get('app.serverData');
 
@@ -239,40 +327,62 @@ abstract class HtmlView extends View {
 		ob_start();
 
 		?>
-		<script id="appBootstrapScript" type="text/javascript">
-			App.DEBUG = <?php echo(\App\DEBUG ? 'true' : 'false') ?>;
-			App.Environment.init(<?php echo(JsonUtils::toJson($envInitData)) ?>);
-
+		<script type="text/javascript" class="appBootstrapScript">
 			(function () {
-				var controller = App.Controller.fromCode(<?php echo(JsonUtils::toJson($this->getCode())); ?>, <?php echo(JsonUtils::toJson($fromCodeData)); ?>);
+				function boot() {
+					App.DEBUG = <?php echo(\App\DEBUG ? 'true' : 'false') ?>;
+					App.Environment.init(<?php echo(JsonUtils::toJson($envInitData)) ?>);
 
-				if (controller) {
-					controller.init();
+					var controller = App.Controller.fromCode(<?php echo(JsonUtils::toJson($this->getCode())); ?>, <?php echo(JsonUtils::toJson($fromCodeData)); ?>);
+
+					if (controller) {
+						controller.init();
+
+						<?php
+						if (count($pendingData) > 0) {
+							?>
+							controller.getModel().set('app.pendingData', <?php echo(JsonUtils::toJson($pendingData)); ?>);
+							<?php
+						}
+						?>
+
+						domReadyPromise.then(function () {
+							controller.hookup();
+							controller.go();
+						});
+					}
 
 					<?php
-					if (count($pendingData) > 0) {
+					if (\App\DEBUG) {
 						?>
-						controller.getModel().set('app.pendingData', <?php echo(JsonUtils::toJson($pendingData)); ?>);
+						App.controller = controller;
 						<?php
 					}
 					?>
+				}
 
+				var promises, domReadyPromise;
+
+				domReadyPromise = new Promise(function (resolve) {
 					function handleDomReady() {
-						controller.hookup();
-						controller.go();
+						resolve();
 						document.removeEventListener('DOMContentLoaded', handleDomReady);
 					}
 
 					document.addEventListener('DOMContentLoaded', handleDomReady);
-				}
+				});
 
-				<?php
-				if (\App\DEBUG) {
-					?>
-					App.controller = controller;
-					<?php
-				}
-				?>
+				promises = Array.from(document.querySelectorAll('script[data-src]'), function (el) {
+					return System.import(el.getAttribute('data-src'));
+				});
+
+				Promise.all(promises).then(function () {
+					Array.from(document.querySelectorAll('script[data-src], .appBootstrapScript'), function (el) {
+						el.parentNode.removeChild(el);
+					});
+
+					boot();
+				});
 			})();
 		</script>
 		<?php

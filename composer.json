@@ -29,12 +29,18 @@
 		{
 			"type": "vcs",
 			"url": "https://github.com/solarfield/lightship-js.git"
+		},
+
+		{
+			"type": "vcs",
+			"url": "https://github.com/systemjs/systemjs.git"
 		}
 	],
 
 	"require": {
 		"solarfield/batten-php": "dev-master",
 		"solarfield/ok-kit-php": "dev-master",
-		"solarfield/lightship-js": "dev-master"
+		"solarfield/lightship-js": "dev-master",
+		"systemjs/systemjs": "^0.19"
 	}
 }
