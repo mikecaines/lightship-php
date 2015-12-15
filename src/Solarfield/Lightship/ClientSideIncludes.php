@@ -7,20 +7,23 @@ class ClientSideIncludes {
 
 	public function addFile($aUrl, $aOptions = array()) {
 		$options = array_replace([
+			'loadMethod' => 'static', //'static' (i.e. <script>, <link>), 'dynamic' (System.import)
 			'group' => 2000000,
 			'bundleKey' => null,
 			'onlyIfExists' => false,
 			'base' => null, //null, 'app', 'module'
 		], $aOptions);
 
-		if (!array_key_exists($options['group'], $this->items)) {
-			$this->items[$options['group']] = [];
+		$groupIndex = $options['loadMethod'] . '+' . $options['group'];
+
+		if (!array_key_exists($groupIndex, $this->items)) {
+			$this->items[$groupIndex] = [];
 		}
 
 		$item = $options;
 		$item['url'] = $aUrl;
 
-		$this->items[$options['group']][$item['base'] . '+' . $item['url']] = $item;
+		$this->items[$groupIndex][$item['base'] . '+' . $item['url']] = $item;
 	}
 
 	public function getResolvedFiles() {
@@ -69,13 +72,13 @@ class ClientSideIncludes {
 
 				if ($resolvedUrl) {
 					$resolvedItem = [
+						'loadMethod' => $item['loadMethod'],
 						'base' => $item['base'],
 						'url' => $item['url'],
 						'resolvedUrl' => $resolvedUrl,
 						'group' => $item['group'],
 						'bundleKey' => $item['bundleKey'],
 						'onlyIfExists' => $item['onlyIfExists'],
-						'globalIndex' => $groupIndex + $groupItemCounter,
 						'fileFilePath' => null,
 						'fileMtime' => null,
 					];
