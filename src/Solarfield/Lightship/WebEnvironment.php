@@ -6,19 +6,19 @@ use Solarfield\Ok\StructUtils;
 require_once __DIR__ . '/Environment.php';
 
 abstract class WebEnvironment extends Environment {
+	static private $chain;
+
 	static public function getBaseChain() {
-		static $chain;
+		if (!self::$chain) {
+			self::$chain = parent::getBaseChain();
 
-		if (!$chain) {
-			$chain = parent::getBaseChain();
-
-			$chain = StructUtils::insertBefore($chain, 'app', __NAMESPACE__, [
+			self::$chain = StructUtils::insertBefore(self::$chain, 'app', __NAMESPACE__, [
 				'namespace' => __NAMESPACE__,
 				'path' => __DIR__,
 			]);
 		}
 
-		return $chain;
+		return self::$chain;
 	}
 
 	static public function init($aOptions) {

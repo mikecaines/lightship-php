@@ -8,6 +8,8 @@ use Solarfield\Ok\MiscUtils;
 require_once \App\DEPENDENCIES_FILE_PATH . '/solarfield/ok-kit-php/src/Solarfield/Ok/MiscUtils.php';
 
 class ClassLoader {
+	private $rules;
+
 	/**
 	 * Imports any Composer PSR4 rules and adds a rule for the App namespace.
 	 * References to Composer's vendor directory, are replaced with the App's dependencies directory.
@@ -16,10 +18,8 @@ class ClassLoader {
 	 * @throws Exception
 	 */
 	protected function getPsr4Rules() {
-		static $rules;
-
-		if ($rules === null) {
-			$rules = [];
+		if ($this->rules === null) {
+			$this->rules = [];
 			$composerDirPath = str_replace('\\', '/', Env::getVars()->get('composerVendorFilePath'));
 			$composerFilePath = $composerDirPath . '/composer/autoload_psr4.php';
 
@@ -36,24 +36,24 @@ class ClassLoader {
 
 				//import the composer rules
 				foreach ($composerRules as $ns => $paths) {
-					if (!array_key_exists($ns, $rules)) {
-						$rules[$ns] = [];
+					if (!array_key_exists($ns, $this->rules)) {
+						$this->rules[$ns] = [];
 					}
 
 					foreach ($paths as $k => $path) {
 						//replace references to the composer vendor dir path, with the app dependencies path
-						$rules[$ns][$k] = preg_replace('/^' . preg_quote($composerDirPath, '/') . '/', $depsPath, str_replace('\\', '/', $path));
+						$this->rules[$ns][$k] = preg_replace('/^' . preg_quote($composerDirPath, '/') . '/', $depsPath, str_replace('\\', '/', $path));
 					}
 				}
 			}
 
 			//add a rule for App
-			$rules = array_merge_recursive($rules, array(
+			$this->rules = array_merge_recursive($this->rules, array(
 				'App\\' => array(Env::getVars()->get('appPackageFilePath') . '/App')
 			));
 		}
 
-		return $rules;
+		return $this->rules;
 	}
 
 	/**
