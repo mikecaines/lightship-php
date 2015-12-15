@@ -32,8 +32,16 @@
 		},
 
 		{
-			"type": "vcs",
-			"url": "https://github.com/systemjs/systemjs.git"
+			"type": "package",
+			"package": {
+				"name": "systemjs/systemjs",
+				"version": "0.19.8",
+				"source": {
+					"type": "git",
+					"url": "https://github.com/systemjs/systemjs",
+					"reference": "tags/0.19.8"
+				}
+			}
 		}
 	],
 
