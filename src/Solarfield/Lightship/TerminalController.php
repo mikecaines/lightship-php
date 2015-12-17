@@ -4,7 +4,7 @@ namespace Solarfield\Lightship;
 use App\Environment as Env;
 use Solarfield\Ok\StructUtils;
 
-abstract class TerminalController extends \Solarfield\Batten\Controller {
+abstract class TerminalController extends Controller {
 	static public function getInitialRoute() {
 		$route = null;
 
@@ -32,11 +32,11 @@ abstract class TerminalController extends \Solarfield\Batten\Controller {
 		return new TerminalInput();
 	}
 
-	public function goTasks() {
+	public function runTasks() {
 		$this->doTask();
 	}
 
-	public function goRender() {
+	public function runRender() {
 		$view = $this->getView();
 
 		if ($view) {
@@ -56,8 +56,6 @@ abstract class TerminalController extends \Solarfield\Batten\Controller {
 	}
 
 	public function doTask() {
-		parent::doTask();
-
 		$startTime = microtime(true);
 
 		$input = $this->getInput();

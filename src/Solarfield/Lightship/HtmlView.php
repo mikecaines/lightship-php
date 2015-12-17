@@ -312,8 +312,11 @@ abstract class HtmlView extends View {
 			'baseChain' => $serverData['baseChain'],
 		];
 
-		$fromCodeData = [
-			'pluginRegistrations' => $serverData['pluginRegistrations'],
+		$bootInfo = [
+			'moduleCode' => $this->getCode(),
+			'controllerOptions' => [
+				'pluginRegistrations' => $serverData['pluginRegistrations'],
+			],
 		];
 
 		/** @var JsonView $jsonView */
@@ -322,66 +325,32 @@ abstract class HtmlView extends View {
 		$jsonView->init();
 		$jsonView->setModel($this->getModel());
 		$pendingData = $jsonView->createJsonData();
-		unset($jsonView);
+		if ($pendingData) $bootInfo['controllerOptions']['pendingData'] = $pendingData;
+		unset($jsonView, $pendingData);
 
 		ob_start();
 
 		?>
-		<script type="text/javascript" class="appBootstrapScript">
+		<script type="text/ecmascript" class="appBootstrapScript">
 			(function () {
-				function boot() {
-					App.DEBUG = <?php echo(\App\DEBUG ? 'true' : 'false') ?>;
-					App.Environment.init(<?php echo(JsonUtils::toJson($envInitData)) ?>);
-
-					var controller = App.Controller.fromCode(<?php echo(JsonUtils::toJson($this->getCode())); ?>, <?php echo(JsonUtils::toJson($fromCodeData)); ?>);
-
-					if (controller) {
-						controller.init();
-
-						<?php
-						if (count($pendingData) > 0) {
-							?>
-							controller.getModel().set('app.pendingData', <?php echo(JsonUtils::toJson($pendingData)); ?>);
-							<?php
-						}
-						?>
-
-						domReadyPromise.then(function () {
-							controller.hookup();
-							controller.go();
-						});
-					}
-
-					<?php
-					if (\App\DEBUG) {
-						?>
-						App.controller = controller;
-						<?php
-					}
-					?>
-				}
-
-				var promises, domReadyPromise;
-
-				domReadyPromise = new Promise(function (resolve) {
-					function handleDomReady() {
-						resolve();
-						document.removeEventListener('DOMContentLoaded', handleDomReady);
-					}
-
-					document.addEventListener('DOMContentLoaded', handleDomReady);
-				});
-
-				promises = Array.from(document.querySelectorAll('script[data-src]'), function (el) {
-					return System.import(el.getAttribute('data-src'));
-				});
-
-				Promise.all(promises).then(function () {
+				Promise.all(
+					Array.from(document.querySelectorAll('script[data-src]'), function (el) {
+						return System.import(el.getAttribute('data-src'));
+					})
+				).then(function () {
 					Array.from(document.querySelectorAll('script[data-src], .appBootstrapScript'), function (el) {
 						el.parentNode.removeChild(el);
 					});
 
-					boot();
+					App.DEBUG = <?php echo(JsonUtils::toJson(\App\DEBUG)) ?>;
+					App.Environment.init(<?php echo(JsonUtils::toJson($envInitData)) ?>);
+
+					return App.Controller.boot(<?php echo(JsonUtils::toJson($bootInfo)); ?>).then(function (controller) {
+						return controller.connect().then(function () {
+							App.controller = controller;
+							controller.run();
+						}).catch(function (ex) {controller.handleException(ex)});
+					}).catch(function (ex) {App.Controller.bail(ex)});
 				});
 			})();
 		</script>

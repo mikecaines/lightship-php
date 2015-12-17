@@ -11,11 +11,11 @@ use Solarfield\Ok\Url;
  * Class WebController
  * @method \Solarfield\Batten\Model getModel
  */
-abstract class WebController extends \Solarfield\Batten\Controller {
-	static public function boot() {
+abstract class WebController extends Controller {
+	static public function boot($aInfo = []) {
 		header('X-Request-Guid: ' . Env::getVars()->get('requestId'));
 
-		parent::boot();
+		return parent::boot($aInfo);
 	}
 
 	static public function getInitialRoute() {
@@ -112,7 +112,7 @@ abstract class WebController extends \Solarfield\Batten\Controller {
 		]);
 	}
 
-	public function goTasks() {
+	public function runTasks() {
 		//if a redirect is queued, we will not call doTask().
 		//Redirects at this level would normally only come from routing.
 		//Redirecting here is ideal, because it is early and inexpensive.
@@ -131,7 +131,7 @@ abstract class WebController extends \Solarfield\Batten\Controller {
 		}
 	}
 
-	public function goRender() {
+	public function runRender() {
 		//if we are already flagged as redirecting, do nothing
 		if (!$this->redirecting) {
 			//if a redirect is queued, don't bother rendering (i.e. sending any response body).
@@ -163,8 +163,6 @@ abstract class WebController extends \Solarfield\Batten\Controller {
 	}
 
 	public function doTask() {
-		parent::doTask();
-
 		if (Reflector::inSurfaceOrModuleMethodCall()) {
 			$this->dispatchEvent(
 				new Event('app-before-do-task', ['target' => $this])
@@ -195,21 +193,24 @@ abstract class WebController extends \Solarfield\Batten\Controller {
 
 		//reboot to the 'Error' module.
 		//We use the Error module to present error messages to the client
-		static::reboot(
-			[
-				'moduleCode' => 'Error', //boot to the 'Error' module
-				'nextRoute' => static::getInitialRoute(), //process the entire route again
-			],
+		$controller = static::boot([
+			'moduleCode' => 'Error', //boot to the 'Error' module
+			'nextRoute' => static::getInitialRoute(), //process the entire route again
 
-			//specify some initial model data, such as the exception we are handling
-			[
+			//specify some initial hints, such as the exception we are handling
+			'hints' => [
 				'app' => [
 					'errorState' => [
 						'error' => $aEx,
-					]
-				]
-			]
-		);
+					],
+				],
+			],
+		]);
+
+		if ($controller) {
+			$controller->connect();
+			$controller->run();
+		}
 	}
 
 	public function handleStandardOutput(StandardOutputEvent $aEvt) {
