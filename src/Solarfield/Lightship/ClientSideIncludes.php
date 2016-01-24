@@ -14,7 +14,7 @@ class ClientSideIncludes {
 			'base' => null, //null, 'app', 'module'
 		], $aOptions);
 
-		$groupIndex = $options['loadMethod'] . '+' . $options['group'];
+		$groupIndex = $options['loadMethod'] . '+' . str_pad($options['group'], 10, ' ', STR_PAD_LEFT);
 
 		if (!array_key_exists($groupIndex, $this->items)) {
 			$this->items[$groupIndex] = [];
