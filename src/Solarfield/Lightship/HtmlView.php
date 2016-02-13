@@ -77,24 +77,6 @@ abstract class HtmlView extends View {
 		$depsPath = Env::getVars()->get('appDependenciesWebPath');
 
 		$this->getJsSystemConfig()->merge([
-			'meta' => [
-				"$depsPath/solarfield/batten-js/*" => [
-					'format' => 'amd',
-				],
-
-				"$depsPath/solarfield/lightship-js/*" => [
-					'format' => 'amd',
-				],
-
-				"$depsPath/solarfield/ok-kit-js/*" => [
-					'format' => 'amd',
-				],
-
-				"$appPackageWebPath/App/*" => [
-					'format' => 'amd',
-				],
-			],
-
 			'paths' => [
 				'solarfield/batten-js/*' => "$depsPath/solarfield/batten-js/*.js",
 				'solarfield/lightship-js/*' => "$depsPath/solarfield/lightship-js/*.js",
