@@ -10,7 +10,7 @@ use Solarfield\Ok\JsonUtils;
 abstract class HtmlView extends View {
 	private $styleIncludes;
 	private $scriptIncludes;
-	private $jsSystemConfig;
+	private $jsEnvironment;
 
 	protected function resolveHints() {
 		$hints = $this->getHints();
@@ -68,20 +68,18 @@ abstract class HtmlView extends View {
 		}
 	}
 
-	/**
-	 * Resolves the data passed to JS System.config()
-	 * All contents must be JSON serializable.
-	 */
-	protected function resolveJsSystemConfig() {
+	protected function resolveJsEnvironment() {
 		$appPackageWebPath = Env::getVars()->get('appPackageWebPath');
 		$depsPath = Env::getVars()->get('appDependenciesWebPath');
 
-		$this->getJsSystemConfig()->merge([
-			'paths' => [
-				'solarfield/batten-js/*' => "$depsPath/solarfield/batten-js/*.js",
-				'solarfield/lightship-js/*' => "$depsPath/solarfield/lightship-js/*.js",
-				'solarfield/ok-kit-js/*' => "$depsPath/solarfield/ok-kit-js/*.js",
-				'app/App/*' => "$appPackageWebPath/App/*.js",
+		$this->getJsEnvironment()->merge([
+			'systemConfig' => [
+				'paths' => [
+					'solarfield/batten-js/*' => "$depsPath/solarfield/batten-js/*.js",
+					'solarfield/lightship-js/*' => "$depsPath/solarfield/lightship-js/*.js",
+					'solarfield/ok-kit-js/*' => "$depsPath/solarfield/ok-kit-js/*.js",
+					'app/App/*' => "$appPackageWebPath/App/*.js",
+				],
 			],
 		]);
 	}
@@ -239,17 +237,12 @@ abstract class HtmlView extends View {
 		return ob_get_clean();
 	}
 
-	/**
-	 * Gets the data that will be passed to System.config().
-	 * @return JsSystemConfig
-	 * @see resolveJsSystemConfig()
-	 */
-	public function getJsSystemConfig() {
-		if (!$this->jsSystemConfig) {
-			$this->jsSystemConfig = new JsSystemConfig();
+	public function getJsEnvironment() {
+		if (!$this->jsEnvironment) {
+			$this->jsEnvironment = new JsEnvironment();
 		}
 
-		return $this->jsSystemConfig;
+		return $this->jsEnvironment;
 	}
 
 	/**
@@ -258,9 +251,10 @@ abstract class HtmlView extends View {
 	 * @throws \Exception
 	 */
 	public function createInitScriptElements() {
-		$this->resolveJsSystemConfig();
+		$this->resolveJsEnvironment();
 
 		$depsPath = Env::getVars()->get('appDependenciesWebPath');
+		$jsSystemConfig = $this->getJsEnvironment()->get('systemConfig');
 
 		ob_start();
 
@@ -268,7 +262,13 @@ abstract class HtmlView extends View {
 		<script type="text/javascript" src="<?php $this->out($depsPath . '/systemjs/systemjs/dist/system-csp-production.js'); ?>" class="appBootstrapScript"></script>
 
 		<script type="text/javascript" class="appBootstrapScript">
-			System.config(<?php echo(JsonUtils::toJson($this->getJsSystemConfig())) ?>);
+			<?php
+			if ($jsSystemConfig) {
+				?>
+				System.config(<?php echo(JsonUtils::toJson($jsSystemConfig)) ?>);
+				<?php
+			}
+			?>
 
 			window.define = System.amdDefine;
 			window.require = System.amdRequire;
@@ -293,6 +293,10 @@ abstract class HtmlView extends View {
 		$envInitData = [
 			'baseChain' => $serverData['baseChain'],
 		];
+
+		$vars = [];
+		foreach (($this->getJsEnvironment()->get('forwardedVars')?:[]) as $k) $vars[$k] = Environment::getVars()->get($k);
+		if ($vars) $envInitData['vars'] = $vars;
 
 		$bootInfo = [
 			'moduleCode' => $this->getCode(),

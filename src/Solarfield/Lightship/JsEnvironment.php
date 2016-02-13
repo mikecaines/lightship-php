@@ -4,7 +4,7 @@ namespace Solarfield\Lightship;
 use Solarfield\Ok\StructUtils;
 use Solarfield\Ok\ToArrayInterface;
 
-class JsSystemConfig implements ToArrayInterface {
+class JsEnvironment implements ToArrayInterface {
 	private $data = [];
 
 	public function get($aPath) {
@@ -17,6 +17,10 @@ class JsSystemConfig implements ToArrayInterface {
 
 	public function set($aPath, $aValue) {
 		StructUtils::set($this->data, $aPath, $aValue);
+	}
+
+	public function pushSet($aPath, $aValue) {
+		StructUtils::pushSet($this->data, $aPath, $aValue);
 	}
 
 	public function merge($aData) {
