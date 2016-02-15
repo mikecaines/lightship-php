@@ -19,7 +19,7 @@ class JsEnvironment implements ToArrayInterface {
 		StructUtils::set($this->data, $aPath, $aValue);
 	}
 
-	public function pushSet($aPath, $aValue) {
+	public function push($aPath, $aValue) {
 		StructUtils::pushSet($this->data, $aPath, $aValue);
 	}
 
