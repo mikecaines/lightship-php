@@ -310,11 +310,12 @@ abstract class HtmlView extends View {
 			(function () {
 				Promise.all(
 					Array.from(document.querySelectorAll('script[data-src]'), function (el) {
+						el.parentNode.removeChild(el);
 						return System.import(el.getAttribute('data-src'));
 					})
 				)
 				.then(function () {
-					Array.from(document.querySelectorAll('script[data-src], .appBootstrapScript'), function (el) {
+					Array.from(document.querySelectorAll('.appBootstrapScript'), function (el) {
 						el.parentNode.removeChild(el);
 					});
 
