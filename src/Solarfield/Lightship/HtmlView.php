@@ -127,24 +127,9 @@ abstract class HtmlView extends View {
 		return $this->styleIncludes;
 	}
 
-	public function getFinalStyleIncludes() {
-		$this->resolveStyleIncludes();
-		$includes = $this->getStyleIncludes();
-
-		$items = $includes->getResolvedFiles();
-
-		/** @var \Solarfield\Lightship\CsiProcessor\Plugins\StyleIncludeProcessor\HtmlViewPlugin $styleIncludeProxyView */
-		$styleIncludeProxyView = $this->getPlugins()->get('app-style-include-processor');
-
-		if ($styleIncludeProxyView) {
-			$items = $styleIncludeProxyView->processItems($items);
-		}
-
-		return $items;
-	}
-
 	public function createStyleElements() {
-		$items = $this->getFinalStyleIncludes();
+		$this->resolveStyleIncludes();
+		$items = $this->getStyleIncludes()->getResolvedFiles();
 
 		ob_start();
 
@@ -173,22 +158,6 @@ abstract class HtmlView extends View {
 		return $this->scriptIncludes;
 	}
 
-	public function getFinalScriptIncludes() {
-		$this->resolveScriptIncludes();
-		$includes = $this->getScriptIncludes();
-
-		$items = $includes->getResolvedFiles();
-
-		/** @var \Solarfield\Lightship\CsiProcessor\Plugins\ScriptIncludeProcessor\HtmlViewPlugin $scriptIncludeProxyView */
-		$scriptIncludeProxyView = $this->getPlugins()->get('app-script-include-processor');
-
-		if ($scriptIncludeProxyView) {
-			$items = $scriptIncludeProxyView->processItems($items);
-		}
-
-		return $items;
-	}
-
 	/**
 	 * Creates <script> elements from the resolved script includes.
 	 * The elements will be output between init/early and bootstrap/late.
@@ -197,7 +166,8 @@ abstract class HtmlView extends View {
 	 * @return string
 	 */
 	public function createScriptElements() {
-		$items = $this->getFinalScriptIncludes();
+		$this->resolveScriptIncludes();
+		$items = $this->getScriptIncludes()->getResolvedFiles();
 
 		ob_start();
 
