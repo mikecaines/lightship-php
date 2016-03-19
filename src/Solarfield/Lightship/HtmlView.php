@@ -312,7 +312,8 @@ abstract class HtmlView extends View {
 					Array.from(document.querySelectorAll('script[data-src]'), function (el) {
 						return System.import(el.getAttribute('data-src'));
 					})
-				).then(function () {
+				)
+				.then(function () {
 					Array.from(document.querySelectorAll('script[data-src], .appBootstrapScript'), function (el) {
 						el.parentNode.removeChild(el);
 					});
@@ -320,13 +321,17 @@ abstract class HtmlView extends View {
 					App.DEBUG = <?php echo(JsonUtils::toJson(\App\DEBUG)) ?>;
 					App.Environment.init(<?php echo(JsonUtils::toJson($envInitData)) ?>);
 
-					return App.Controller.boot(<?php echo(JsonUtils::toJson($bootInfo)); ?>).then(function (controller) {
-						return controller.connect().then(function () {
-							App.controller = controller;
-							controller.run();
-						}).catch(function (ex) {controller.handleException(ex)});
-					}).catch(function (ex) {App.Controller.bail(ex)});
-				});
+					return App.Controller.boot(<?php echo(JsonUtils::toJson($bootInfo)); ?>);
+				})
+				.then(function (controller) {
+					controller.connect()
+					.then(function () {
+						App.controller = controller;
+						controller.run();
+					})
+					.catch(function (ex) {controller.handleException(ex)});
+				})
+				.catch(function (ex) {App.Controller.bail(ex)});
 			})();
 		</script>
 		<?php
