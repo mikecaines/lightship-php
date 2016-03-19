@@ -33,7 +33,7 @@ abstract class WebController extends Controller {
 		$options->add('app.allowCachedResponse', true);
 
 		$this->dispatchEvent(
-			new Event('app-resolve-options', ['target' => $this])
+			new Event('resolve-options', ['target' => $this])
 		);
 	}
 
@@ -74,7 +74,7 @@ abstract class WebController extends Controller {
 		];
 
 		$this->dispatchEvent(
-			new ArrayBufferEvent('app-process-route', ['target' => $this], $buffer)
+			new ArrayBufferEvent('process-route', ['target' => $this], $buffer)
 		);
 
 		if ($buffer['outputRoute']) {
@@ -159,7 +159,7 @@ abstract class WebController extends Controller {
 
 	public function doTask() {
 		$this->dispatchEvent(
-			new Event('app-before-do-task', ['target' => $this])
+			new Event('before-do-task', ['target' => $this])
 		);
 
 		$hints = $this->getHints();
@@ -174,7 +174,7 @@ abstract class WebController extends Controller {
 		}
 
 		$this->dispatchEvent(
-			new Event('app-do-task', ['target' => $this])
+			new Event('do-task', ['target' => $this])
 		);
 	}
 

@@ -8,7 +8,7 @@ abstract class View extends \Solarfield\Batten\View {
 		parent::resolveHints();
 
 		$this->dispatchEvent(
-			new Event('app-resolve-hints', ['target' => $this])
+			new Event('resolve-hints', ['target' => $this])
 		);
 	}
 
@@ -16,7 +16,7 @@ abstract class View extends \Solarfield\Batten\View {
 		parent::resolveHintedInput();
 
 		$this->dispatchEvent(
-			new Event('app-resolve-hinted-input', ['target' => $this])
+			new Event('resolve-hinted-input', ['target' => $this])
 		);
 	}
 }

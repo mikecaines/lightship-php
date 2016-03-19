@@ -14,7 +14,7 @@ class JsonView extends View {
 		$rules->set('app.standardOutput');
 
 		$this->dispatchEvent(
-			new Event('app-resolve-data-rules', ['target' => $this])
+			new Event('resolve-data-rules', ['target' => $this])
 		);
 	}
 
@@ -42,7 +42,7 @@ class JsonView extends View {
 		$buffer = [];
 
 		$this->dispatchEvent(
-			new ArrayBufferEvent('app-create-json-data', ['target' => $this], $buffer)
+			new ArrayBufferEvent('create-json-data', ['target' => $this], $buffer)
 		);
 
 		if (count($buffer) > 0) {

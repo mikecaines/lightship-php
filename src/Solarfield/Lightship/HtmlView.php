@@ -16,13 +16,13 @@ abstract class HtmlView extends View {
 		$hints->set('doLoadServerData', true);
 
 		$this->dispatchEvent(
-			new Event('app-resolve-hints', ['target' => $this])
+			new Event('resolve-hints', ['target' => $this])
 		);
 	}
 
 	protected function resolveStyleIncludes() {
 		$this->dispatchEvent(
-			new Event('app-resolve-style-includes', ['target' => $this])
+			new Event('resolve-style-includes', ['target' => $this])
 		);
 	}
 
@@ -57,7 +57,7 @@ abstract class HtmlView extends View {
 		}
 
 		$this->dispatchEvent(
-			new Event('app-resolve-script-includes', ['target' => $this])
+			new Event('resolve-script-includes', ['target' => $this])
 		);
 	}
 
@@ -157,7 +157,7 @@ abstract class HtmlView extends View {
 		$buffer = '';
 
 		$this->dispatchEvent(
-			new ArrayBufferEvent('app-create-style-elements', ['target' => $this], $buffer)
+			new ArrayBufferEvent('create-style-elements', ['target' => $this], $buffer)
 		);
 
 		echo($buffer);
@@ -218,7 +218,7 @@ abstract class HtmlView extends View {
 		$buffer = '';
 
 		$this->dispatchEvent(
-			new ArrayBufferEvent('app-create-script-elements', ['target' => $this], $buffer)
+			new ArrayBufferEvent('create-script-elements', ['target' => $this], $buffer)
 		);
 
 		echo($buffer);
