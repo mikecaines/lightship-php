@@ -3,7 +3,6 @@ namespace Solarfield\Lightship;
 
 use App\Environment as Env;
 use Solarfield\Batten\Event;
-use Solarfield\Batten\Reflector;
 use Solarfield\Ok\HtmlUtils;
 use Solarfield\Ok\JsonUtils;
 
@@ -16,19 +15,15 @@ abstract class HtmlView extends View {
 		$hints = $this->getHints();
 		$hints->set('doLoadServerData', true);
 
-		if (Reflector::inSurfaceOrModuleMethodCall()) {
-			$this->dispatchEvent(
-				new Event('app-resolve-hints', ['target' => $this])
-			);
-		}
+		$this->dispatchEvent(
+			new Event('app-resolve-hints', ['target' => $this])
+		);
 	}
 
 	protected function resolveStyleIncludes() {
-		if (Reflector::inSurfaceOrModuleMethodCall()) {
-			$this->dispatchEvent(
-				new Event('app-resolve-style-includes', ['target' => $this])
-			);
-		}
+		$this->dispatchEvent(
+			new Event('app-resolve-style-includes', ['target' => $this])
+		);
 	}
 
 	protected function resolveScriptIncludes() {
@@ -61,11 +56,9 @@ abstract class HtmlView extends View {
 			]);
 		}
 
-		if (Reflector::inSurfaceOrModuleMethodCall()) {
-			$this->dispatchEvent(
-				new Event('app-resolve-script-includes', ['target' => $this])
-			);
-		}
+		$this->dispatchEvent(
+			new Event('app-resolve-script-includes', ['target' => $this])
+		);
 	}
 
 	protected function resolveJsEnvironment() {
@@ -161,15 +154,13 @@ abstract class HtmlView extends View {
 			<?php
 		}
 
-		if (Reflector::inSurfaceOrModuleMethodCall()) {
-			$buffer = '';
+		$buffer = '';
 
-			$this->dispatchEvent(
-				new ArrayBufferEvent('app-create-style-elements', ['target' => $this], $buffer)
-			);
+		$this->dispatchEvent(
+			new ArrayBufferEvent('app-create-style-elements', ['target' => $this], $buffer)
+		);
 
-			echo($buffer);
-		}
+		echo($buffer);
 
 		return ob_get_clean();
 	}
@@ -224,15 +215,13 @@ abstract class HtmlView extends View {
 			}
 		}
 
-		if (Reflector::inSurfaceOrModuleMethodCall()) {
-			$buffer = '';
+		$buffer = '';
 
-			$this->dispatchEvent(
-				new ArrayBufferEvent('app-create-script-elements', ['target' => $this], $buffer)
-			);
+		$this->dispatchEvent(
+			new ArrayBufferEvent('app-create-script-elements', ['target' => $this], $buffer)
+		);
 
-			echo($buffer);
-		}
+		echo($buffer);
 
 		return ob_get_clean();
 	}

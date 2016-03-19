@@ -3,7 +3,6 @@ namespace Solarfield\Lightship;
 
 use App\Environment as Env;
 use Solarfield\Batten\Event;
-use Solarfield\Batten\Reflector;
 use Solarfield\Batten\StandardOutputEvent;
 use Solarfield\Ok\Url;
 
@@ -33,11 +32,9 @@ abstract class WebController extends Controller {
 		$options = $this->getOptions();
 		$options->add('app.allowCachedResponse', true);
 
-		if (Reflector::inSurfaceOrModuleMethodCall()) {
-			$this->dispatchEvent(
-				new Event('app-resolve-options', ['target' => $this])
-			);
-		}
+		$this->dispatchEvent(
+			new Event('app-resolve-options', ['target' => $this])
+		);
 	}
 
 	protected function doLoadServerData() {
@@ -76,11 +73,9 @@ abstract class WebController extends Controller {
 			'outputRoute' => null,
 		];
 
-		if (Reflector::inSurfaceOrModuleMethodCall()) {
-			$this->dispatchEvent(
-				new ArrayBufferEvent('app-process-route', ['target' => $this], $buffer)
-			);
-		}
+		$this->dispatchEvent(
+			new ArrayBufferEvent('app-process-route', ['target' => $this], $buffer)
+		);
 
 		if ($buffer['outputRoute']) {
 			return $buffer['outputRoute'];
@@ -163,11 +158,9 @@ abstract class WebController extends Controller {
 	}
 
 	public function doTask() {
-		if (Reflector::inSurfaceOrModuleMethodCall()) {
-			$this->dispatchEvent(
-				new Event('app-before-do-task', ['target' => $this])
-			);
-		}
+		$this->dispatchEvent(
+			new Event('app-before-do-task', ['target' => $this])
+		);
 
 		$hints = $this->getHints();
 		$moduleOptions = $this->getOptions();
@@ -180,11 +173,9 @@ abstract class WebController extends Controller {
 			$this->doLoadServerData();
 		}
 
-		if (Reflector::inSurfaceOrModuleMethodCall()) {
-			$this->dispatchEvent(
-				new Event('app-do-task', ['target' => $this])
-			);
-		}
+		$this->dispatchEvent(
+			new Event('app-do-task', ['target' => $this])
+		);
 	}
 
 	public function handleException(\Exception $aEx) {

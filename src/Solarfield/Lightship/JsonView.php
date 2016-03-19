@@ -3,7 +3,6 @@ namespace Solarfield\Lightship;
 
 use Solarfield\Batten\Event;
 use Solarfield\Batten\Flags;
-use Solarfield\Batten\Reflector;
 use Solarfield\Ok\JsonUtils;
 use Solarfield\Ok\StructUtils;
 
@@ -14,11 +13,9 @@ class JsonView extends View {
 		$rules = $this->getDataRules();
 		$rules->set('app.standardOutput');
 
-		if (Reflector::inSurfaceOrModuleMethodCall()) {
-			$this->dispatchEvent(
-				new Event('app-resolve-data-rules', ['target' => $this])
-			);
-		}
+		$this->dispatchEvent(
+			new Event('app-resolve-data-rules', ['target' => $this])
+		);
 	}
 
 	public function getDataRules() {
@@ -42,16 +39,14 @@ class JsonView extends View {
 			}
 		}
 
-		if (Reflector::inSurfaceOrModuleMethodCall()) {
-			$buffer = [];
+		$buffer = [];
 
-			$this->dispatchEvent(
-				new ArrayBufferEvent('app-create-json-data', ['target' => $this], $buffer)
-			);
+		$this->dispatchEvent(
+			new ArrayBufferEvent('app-create-json-data', ['target' => $this], $buffer)
+		);
 
-			if (count($buffer) > 0) {
-				$jsonData = StructUtils::merge($jsonData, $buffer);
-			}
+		if (count($buffer) > 0) {
+			$jsonData = StructUtils::merge($jsonData, $buffer);
 		}
 
 		return $jsonData;
