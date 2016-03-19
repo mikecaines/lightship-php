@@ -306,7 +306,7 @@ abstract class HtmlView extends View {
 		ob_start();
 
 		?>
-		<script type="text/ecmascript" class="appBootstrapScript">
+		<script type="text/javascript" class="appBootstrapScript">
 			(function () {
 				Promise.all(
 					Array.from(document.querySelectorAll('script[data-src]'), function (el) {
