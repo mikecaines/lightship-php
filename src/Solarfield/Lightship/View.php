@@ -1,7 +1,7 @@
 <?php
 namespace Solarfield\Lightship;
 
-use Solarfield\Batten\Event;
+use Solarfield\Ok\Event;
 
 abstract class View extends \Solarfield\Batten\View {
 	protected function resolveHints() {

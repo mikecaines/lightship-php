@@ -2,7 +2,7 @@
 namespace Solarfield\Lightship;
 
 use App\Environment as Env;
-use Solarfield\Batten\Event;
+use Solarfield\Ok\Event;
 use Solarfield\Batten\StandardOutputEvent;
 use Solarfield\Ok\Url;
 

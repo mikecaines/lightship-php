@@ -1,7 +1,7 @@
 <?php
 namespace Solarfield\Lightship;
 
-class ArrayBufferEvent extends \Solarfield\Batten\Event {
+class ArrayBufferEvent extends \Solarfield\Ok\Event {
 	public $buffer;
 
 	/**

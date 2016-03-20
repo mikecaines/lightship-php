@@ -1,7 +1,7 @@
 <?php
 namespace Solarfield\Lightship;
 
-use Solarfield\Batten\Event;
+use Solarfield\Ok\Event;
 use Solarfield\Batten\Flags;
 use Solarfield\Ok\JsonUtils;
 use Solarfield\Ok\StructUtils;
