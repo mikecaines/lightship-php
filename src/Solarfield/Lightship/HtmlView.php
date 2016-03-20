@@ -279,16 +279,11 @@ abstract class HtmlView extends View {
 		<script type="text/javascript" class="appBootstrapScript">
 			(function () {
 				Promise.all(
-					Array.from(document.querySelectorAll('script[data-src]'), function (el) {
-						el.parentNode.removeChild(el);
+					Array.from(document.head.querySelectorAll('script[data-src]'), function (el) {
 						return System.import(el.getAttribute('data-src'));
 					})
 				)
 				.then(function () {
-					Array.from(document.querySelectorAll('.appBootstrapScript'), function (el) {
-						el.parentNode.removeChild(el);
-					});
-
 					App.DEBUG = <?php echo(JsonUtils::toJson(\App\DEBUG)) ?>;
 					App.Environment.init(<?php echo(JsonUtils::toJson($envInitData)) ?>);
 
