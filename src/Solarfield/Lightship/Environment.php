@@ -2,12 +2,27 @@
 namespace Solarfield\Lightship;
 
 use Exception;
+use Solarfield\Ok\StructUtils;
 
 require_once \App\DEPENDENCIES_FILE_PATH . '/solarfield/batten-php/src/Solarfield/Batten/Environment.php';
 
 abstract class Environment extends \Solarfield\Batten\Environment {
+	static private $chain;
 	static private $config;
 	static private $classLoader;
+
+	static public function getBaseChain() {
+		if (!self::$chain) {
+			self::$chain = parent::getBaseChain();
+
+			self::$chain = StructUtils::insertBefore(self::$chain, 'app', __NAMESPACE__, [
+				'namespace' => __NAMESPACE__,
+				'path' => __DIR__,
+			]);
+		}
+
+		return self::$chain;
+	}
 
 	static protected function getConfig() {
 		return self::$config;
