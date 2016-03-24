@@ -2,6 +2,7 @@
 namespace Solarfield\Lightship;
 
 use App\Environment as Env;
+use Exception;
 use Solarfield\Ok\Event;
 use Solarfield\Batten\StandardOutputEvent;
 use Solarfield\Ok\Url;
@@ -88,6 +89,10 @@ abstract class WebController extends Controller {
 		$type = trim($this->getInput()->getAsString('app.viewType.code'));
 
 		if ($type === '') $type = $this->getDefaultViewType();
+
+		if (!preg_match('/^[a-z0-9]+$/i', $type)) throw new Exception(
+			"Requested view type contains invalid characters: '$type'."
+		);
 
 		return $type;
 	}
@@ -178,7 +183,7 @@ abstract class WebController extends Controller {
 		);
 	}
 
-	public function handleException(\Exception $aEx) {
+	public function handleException(Exception $aEx) {
 		//log the error
 		Env::getLogger()->error($aEx);
 
