@@ -305,7 +305,10 @@ abstract class HtmlView extends View {
 						}
 					}
 				})
-				.catch(function (ex) {console.warn('Bootstrap failed.', ex)});
+				.catch(function (e) {
+					if (self.console && console.error) console.error('Bootstrap failed.', e);
+					else throw e;
+				});
 			})();
 		</script>
 		<?php
