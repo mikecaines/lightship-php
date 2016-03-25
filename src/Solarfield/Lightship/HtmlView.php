@@ -284,20 +284,28 @@ abstract class HtmlView extends View {
 					})
 				)
 				.then(function () {
-					App.DEBUG = <?php echo(JsonUtils::toJson(\App\DEBUG)) ?>;
-					App.Environment.init(<?php echo(JsonUtils::toJson($envInitData)) ?>);
+					var controller;
 
-					return App.Controller.boot(<?php echo(JsonUtils::toJson($bootInfo)); ?>);
+					if (self.App && App.Environment) {
+						App.DEBUG = <?php echo(JsonUtils::toJson(\App\DEBUG)) ?>;
+						App.Environment.init(<?php echo(JsonUtils::toJson($envInitData)) ?>);
+
+						if (App.Controller) {
+							try {
+								controller = App.Controller.boot(<?php echo(JsonUtils::toJson($bootInfo)); ?>);
+
+								controller.connect()
+								.then(function () {
+									App.controller = controller;
+									controller.run();
+								})
+								.catch(function (e) {controller.handleException(e)});
+							}
+							catch (e) {App.Controller.bail(e);}
+						}
+					}
 				})
-				.then(function (controller) {
-					controller.connect()
-					.then(function () {
-						App.controller = controller;
-						controller.run();
-					})
-					.catch(function (ex) {controller.handleException(ex)});
-				})
-				.catch(function (ex) {App.Controller.bail(ex)});
+				.catch(function (ex) {console.warn('Bootstrap failed.', ex)});
 			})();
 		</script>
 		<?php
