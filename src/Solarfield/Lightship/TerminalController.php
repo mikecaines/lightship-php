@@ -86,7 +86,7 @@ abstract class TerminalController extends Controller {
 	}
 
 	public function handleException(\Exception $aEx) {
-		Env::getLogger()->error($aEx);
+		Env::getLogger()->error('Encountered exception.', ['exception'=>$aEx]);
 		Env::getStandardOutput()->write('FATAL ERROR: ' . $aEx->getMessage());
 	}
 
