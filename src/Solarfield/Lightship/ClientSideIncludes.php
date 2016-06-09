@@ -12,6 +12,7 @@ class ClientSideIncludes {
 			'bundleKey' => null,
 			'onlyIfExists' => false,
 			'base' => null, //null, 'app', 'module'
+			'filePath' => null,
 		], $aOptions);
 
 		$groupIndex = $options['loadMethod'] . '+' . str_pad($options['group'], 10, ' ', STR_PAD_LEFT);
@@ -44,29 +45,49 @@ class ClientSideIncludes {
 
 			foreach ($group as $item) {
 				$resolvedUrl = null;
+				$resolvedFileFilePath = null;
 
-				if ($item['base'] == 'app') {
-					if ($appLink) {
-						$path = realpath($appLink['path'] . $item['url']);
+				if ($item['base'] == 'app' || $item['base'] == 'module') {
+					if (($link = $item['base'] == 'app' ? $appLink : $moduleLink)) {
+						//if item specifies an explicit file path (relative to link)
+						if ($item['filePath']) {
+							//if file exists on disk
+							if ($path = realpath($link['path'] . $item['filePath'])) {
+								//if item's url is a url path
+								if (mb_substr($item['url'], 0, 1) == '/') {
+									//get web path relative to document root
+									$linkWebPath = preg_replace('/^' . preg_quote($docRoot, '/') . '/', '', $link['path']);
 
-						if ($path) {
-							$resolvedUrl = preg_replace('/^' . preg_quote($docRoot, '/') . '/', '', $path);
+									$resolvedUrl = $linkWebPath . $item['url'];
+									$resolvedFileFilePath = $path;
+								}
+
+								//else item's url is a module id
+								else {
+									$resolvedUrl = $item['url'];
+								}
+							}
 						}
-					}
-				}
 
-				else if ($item['base'] == 'module') {
-					if ($moduleLink) {
-						$path = realpath($moduleLink['path'] . $item['url']);
-
-						if ($path) {
-							$resolvedUrl = preg_replace('/^' . preg_quote($docRoot, '/') . '/', '', $path);
+						//else item only specifies a url (web path)
+						else {
+							//if file exists on disk
+							if (($path = realpath($link['path'] . $item['url']))) {
+								$resolvedFileFilePath = $path;
+								$resolvedUrl = preg_replace('/^' . preg_quote($docRoot, '/') . '/', '', $path);
+							}
 						}
 					}
 				}
 
 				else {
 					$resolvedUrl = $item['url'];
+
+					if (preg_match('/^\/[^\/]/', $resolvedUrl) == 1) {
+						if (($realPath = realpath($docRoot . $resolvedUrl))) {
+							$resolvedFileFilePath = $realPath;
+						}
+					}
 				}
 
 
@@ -79,23 +100,11 @@ class ClientSideIncludes {
 						'group' => $item['group'],
 						'bundleKey' => $item['bundleKey'],
 						'onlyIfExists' => $item['onlyIfExists'],
-						'fileFilePath' => null,
-						'fileMtime' => null,
+						'fileFilePath' => $resolvedFileFilePath,
 					];
 
-					if (preg_match('/^\/[^\/]/', $resolvedItem['resolvedUrl']) == 1) {
-						$realPath = realpath($docRoot . $resolvedItem['resolvedUrl']);
-
-						if ($realPath) {
-							$resolvedItem['fileFilePath'] = $realPath;
-							$resolvedItem['fileMtime'] = filemtime($realPath);
-						}
-					}
-
-					if (!$resolvedItem['onlyIfExists'] || $resolvedItem['fileFilePath']) {
-						$resolvedItems[] = $resolvedItem;
-						$groupItemCounter++;
-					}
+					$resolvedItems[] = $resolvedItem;
+					$groupItemCounter++;
 				}
 			}
 		}
