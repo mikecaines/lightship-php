@@ -28,29 +28,29 @@ abstract class HtmlView extends View {
 
 	protected function resolveScriptIncludes() {
 		$includes = $this->getScriptIncludes();
-		$appWebPath = Env::getVars()->get('appPackageWebPath');
 
 		$moduleCode = $this->getCode();
 		$chain = $this->getController()->getChain($moduleCode);
 
-		$includes->addFile($appWebPath . '/App/Environment.js', [
+		$includes->addFile('app/App/Environment', [
 			'loadMethod' => 'dynamic',
 			'group' => 1000000,
 			'bundleKey' => 'app',
 		]);
 
-		$includes->addFile($appWebPath . '/App/Controller.js', [
+		$includes->addFile('app/App/Controller', [
 			'loadMethod' => 'dynamic',
 			'group' => 1000000,
 			'bundleKey' => 'app',
 		]);
 
-		$moduleLink = array_key_exists('module', $chain) ? $chain['module'] : null;
-		if ($moduleLink) {
-			$includes->addFile('/Controller.js', [
+		if (array_key_exists('module', $chain)) {
+			$dirs = str_replace('\\', '/', $chain['module']['namespace']);
+			$includes->addFile("app/$dirs/Controller", [
 				'loadMethod' => 'dynamic',
 				'base' => 'module',
 				'onlyIfExists' => true,
+				'filePath' => '/Controller.js',
 				'group' => 1250000,
 				'bundleKey' => 'module',
 			]);
