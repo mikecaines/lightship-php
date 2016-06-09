@@ -71,7 +71,7 @@ abstract class HtmlView extends View {
 					'solarfield/batten-js/*' => "$depsPath/solarfield/batten-js/*.js",
 					'solarfield/lightship-js/*' => "$depsPath/solarfield/lightship-js/*.js",
 					'solarfield/ok-kit-js/*' => "$depsPath/solarfield/ok-kit-js/*.js",
-					'app/App/*' => "$appPackageWebPath/App/*.js",
+					'app/*' => "$appPackageWebPath/*.js",
 				],
 			],
 		]);
