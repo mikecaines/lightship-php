@@ -45,16 +45,19 @@ abstract class WebController extends Controller {
 		foreach (Env::getBaseChain() as $k => $v) {
 			//TODO: this should be defaulted elsewhere
 			$v = array_replace([
+				'exposeToClient' => false,
 				'namespace' => null,
 				'pluginsSubNamespace' => '\\Plugins',
 			], $v);
 
-			$link = array(
-				'namespace' => str_replace('\\', '.', $v['namespace']),
-				'pluginsSubNamespace' => array_key_exists('pluginsSubNamespace', $v) ? str_replace('\\', '.', $v['pluginsSubNamespace']) : null,
-			);
+			if ($v['exposeToClient']) {
+				$link = array(
+					'namespace' => str_replace('\\', '.', $v['namespace']),
+					'pluginsSubNamespace' => array_key_exists('pluginsSubNamespace', $v) ? str_replace('\\', '.', $v['pluginsSubNamespace']) : null,
+				);
 
-			$baseChain[$k] = $link;
+				$baseChain[$k] = $link;
+			}
 		}
 
 		$serverData = [
