@@ -32,6 +32,7 @@ abstract class WebController extends Controller {
 
 		$options = $this->getOptions();
 		$options->add('app.allowCachedResponse', true);
+		$options->add('app.allowStoredResponse', true);
 
 		$this->dispatchEvent(
 			new Event('resolve-options', ['target' => $this])
@@ -173,8 +174,18 @@ abstract class WebController extends Controller {
 		$hints = $this->getHints();
 		$moduleOptions = $this->getOptions();
 
+		$cacheControl = [];
 		if (!$moduleOptions->get('app.allowCachedResponse')) {
-			header('Cache-Control: no-cache, no-store, must-revalidate');
+			$cacheControl['no-cache'] = true;
+			$cacheControl['must-revalidate'] = null;
+		}
+		if (!$moduleOptions->get('app.allowStoredResponse')) {
+			$cacheControl['no-cache'] = true;
+			$cacheControl['must-revalidate'] = null;
+			$cacheControl['no-store'] = null;
+		}
+		if ($cacheControl) {
+			header('Cache-Control: ' . implode(', ', array_keys($cacheControl)));
 		}
 
 		if ($hints->get('doLoadServerData')) {
