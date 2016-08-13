@@ -1,6 +1,8 @@
 <?php
 namespace Solarfield\Lightship;
 
+use App\Environment as Env;
+
 class ClientSideIncludes {
 	private $view;
 	private $items = [];
@@ -49,16 +51,15 @@ class ClientSideIncludes {
 
 				if ($item['base'] == 'app' || $item['base'] == 'module') {
 					if (($link = $item['base'] == 'app' ? $appLink : $moduleLink)) {
+						$sourceDirUrl = Env::getVars()->get('appSourceWebPath') . '/' . str_replace('\\', '/', $link['namespace']);
+
 						//if item specifies an explicit file path (relative to link)
 						if ($item['filePath']) {
 							//if file exists on disk
 							if ($path = realpath($link['path'] . $item['filePath'])) {
 								//if item's url is a url path
 								if (mb_substr($item['url'], 0, 1) == '/') {
-									//get web path relative to document root
-									$linkWebPath = preg_replace('/^' . preg_quote($docRoot, '/') . '/', '', $link['path']);
-
-									$resolvedUrl = $linkWebPath . $item['url'];
+									$resolvedUrl = $sourceDirUrl . $item['url'];
 									$resolvedFileFilePath = $path;
 								}
 
@@ -74,7 +75,7 @@ class ClientSideIncludes {
 							//if file exists on disk
 							if (($path = realpath($link['path'] . $item['url']))) {
 								$resolvedFileFilePath = $path;
-								$resolvedUrl = preg_replace('/^' . preg_quote($docRoot, '/') . '/', '', $path);
+								$resolvedUrl = $sourceDirUrl . $item['url'];
 							}
 						}
 					}

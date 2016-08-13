@@ -62,7 +62,7 @@ abstract class HtmlView extends View {
 	}
 
 	protected function resolveJsEnvironment() {
-		$appPackageWebPath = Env::getVars()->get('appPackageWebPath');
+		$appSourceWebPath = Env::getVars()->get('appSourceWebPath');
 		$depsPath = Env::getVars()->get('appDependenciesWebPath');
 
 		$this->getJsEnvironment()->merge([
@@ -71,7 +71,7 @@ abstract class HtmlView extends View {
 					'solarfield/batten-js/*' => "$depsPath/solarfield/batten-js/*.js",
 					'solarfield/lightship-js/*' => "$depsPath/solarfield/lightship-js/*.js",
 					'solarfield/ok-kit-js/*' => "$depsPath/solarfield/ok-kit-js/*.js",
-					'app/*' => "$appPackageWebPath/*.js",
+					'app/*' => "$appSourceWebPath/*.js",
 				],
 			],
 		]);
