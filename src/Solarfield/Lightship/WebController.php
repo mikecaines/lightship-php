@@ -198,8 +198,14 @@ abstract class WebController extends Controller {
 	}
 
 	public function handleException(Exception $aEx) {
-		//log the error
-		Env::getLogger()->error('Encountered exception.', ['exception'=>$aEx]);
+		if ($aEx instanceof UserFriendlyException) {
+			//do nothing, as UserFriendlyException's are considered low-priority
+		}
+
+		else {
+			//log the error
+			Env::getLogger()->error('Encountered exception.', ['exception'=>$aEx]);
+		}
 
 		//reboot to the 'Error' module.
 		//We use the Error module to present error messages to the client
