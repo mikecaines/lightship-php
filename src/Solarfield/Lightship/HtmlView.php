@@ -174,13 +174,13 @@ abstract class HtmlView extends View {
 		foreach ($items as $item) {
 			if ($item['loadMethod'] == 'static') {
 				?>
-				<script type="text/javascript" src="<?php $this->out($item['resolvedUrl']); ?>"></script>
+				<script type="text/javascript" src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
 				<?php
 			}
 
 			else if ($item['loadMethod'] == 'dynamic') {
 				?>
-				<script type="text/javascript" data-src="<?php $this->out($item['resolvedUrl']); ?>"></script>
+				<script type="text/javascript" data-src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
 				<?php
 			}
 		}
