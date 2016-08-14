@@ -56,7 +56,7 @@ class ClientSideIncludes {
 						//if item specifies an explicit file path (relative to link)
 						if ($item['filePath']) {
 							//if file exists on disk
-							if ($path = realpath($link['path'] . $item['filePath'])) {
+							if (($path = realpath($link['path'] . $item['filePath']))) {
 								//if item's url is a url path
 								if (mb_substr($item['url'], 0, 1) == '/') {
 									$resolvedUrl = $sourceDirUrl . $item['url'];
@@ -82,12 +82,23 @@ class ClientSideIncludes {
 				}
 
 				else {
-					$resolvedUrl = $item['url'];
-
-					if (preg_match('/^\/[^\/]/', $resolvedUrl) == 1) {
-						if (($realPath = realpath($docRoot . $resolvedUrl))) {
+					if ($item['filePath']) {
+						if (($realPath = realpath($item['filePath']))) {
 							$resolvedFileFilePath = $realPath;
 						}
+					}
+
+					else {
+						//if url starts with a single forward slash, consider it relative to document root
+						if (preg_match('/^\/[^\/]/', $resolvedUrl) == 1) {
+							if (($realPath = realpath($docRoot . $resolvedUrl))) {
+								$resolvedFileFilePath = $realPath;
+							}
+						}
+					}
+
+					if (!$item['onlyIfExists'] || ($item['onlyIfExists'] && $resolvedFileFilePath)) {
+						$resolvedUrl = $item['url'];
 					}
 				}
 
