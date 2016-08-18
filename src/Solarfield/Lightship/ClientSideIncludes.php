@@ -31,14 +31,6 @@ class ClientSideIncludes {
 	public function getResolvedFiles() {
 		$resolvedItems = [];
 
-		$moduleCode = $this->view->getCode();
-		$chain = $this->view->getController()->getChain($moduleCode);
-
-		$moduleLink = array_key_exists('module', $chain) ? $chain['module'] : null;
-		$appLink = array_key_exists('app', $chain) ? $chain['app'] : null;
-
-		$docRoot = realpath($_SERVER['DOCUMENT_ROOT']);
-
 		ksort($this->items);
 
 		foreach ($this->items as $groupIndex => $group) {
@@ -48,8 +40,19 @@ class ClientSideIncludes {
 				$resolvedUrl = null;
 				$resolvedFileFilePath = null;
 
+				//if the item is relative to the app or module
 				if ($item['base'] == 'app' || $item['base'] == 'module') {
-					if (($link = $item['base'] == 'app' ? $appLink : $moduleLink)) {
+					$moduleCode = $this->view->getCode();
+					$chain = $this->view->getController()->getChain($moduleCode);
+
+					if ($item['base'] == 'app') {
+						$link = array_key_exists('app', $chain) ? $chain['app'] : null;
+					}
+					else {
+						$link = array_key_exists('module', $chain) ? $chain['module'] : null;
+					}
+
+					if ($link) {
 						$sourceDirUrl = Env::getVars()->get('appSourceWebPath') . '/' . str_replace('\\', '/', $link['namespace']);
 
 						//if item specifies an explicit file path (relative to link)
@@ -80,23 +83,27 @@ class ClientSideIncludes {
 					}
 				}
 
+				//else the item is not relative to the app or module
 				else {
-					if ($item['filePath']) {
-						if (($realPath = realpath($item['filePath']))) {
-							$resolvedFileFilePath = $realPath;
-						}
-					}
-
-					else {
-						//if url starts with a single forward slash, consider it relative to document root
-						if (preg_match('/^\/[^\/]/', $resolvedUrl) == 1) {
-							if (($realPath = realpath($docRoot . $resolvedUrl))) {
+					//if we should check that the file exists in the filesystem
+					if ($item['onlyIfExists']) {
+						if ($item['filePath']) {
+							if (($realPath = realpath($item['filePath']))) {
 								$resolvedFileFilePath = $realPath;
+								$resolvedUrl = $item['url'];
+							}
+						}
+
+						else {
+							if (($realPath = realpath($item['url']))) {
+								$resolvedFileFilePath = $realPath;
+								$resolvedUrl = $item['url'];
 							}
 						}
 					}
 
-					if (!$item['onlyIfExists'] || ($item['onlyIfExists'] && $resolvedFileFilePath)) {
+					//else
+					else {
 						$resolvedUrl = $item['url'];
 					}
 				}
@@ -105,7 +112,7 @@ class ClientSideIncludes {
 				if ($resolvedUrl) {
 					$resolvedItem = $item;
 					$resolvedItem['resolvedUrl'] = $resolvedUrl;
-					$resolvedItem['fileFilePath'] = $resolvedFileFilePath;
+					$resolvedItem['resolvedFilePath'] = $resolvedFileFilePath;
 
 					$resolvedItems[] = $resolvedItem;
 					$groupItemCounter++;
