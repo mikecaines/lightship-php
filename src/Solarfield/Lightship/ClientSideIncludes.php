@@ -11,13 +11,12 @@ class ClientSideIncludes {
 		$options = array_replace([
 			'loadMethod' => 'static', //'static' (i.e. <script>, <link>), 'dynamic' (System.import)
 			'group' => 2000000,
-			'bundleKey' => null,
 			'onlyIfExists' => false,
 			'base' => null, //null, 'app', 'module'
 			'filePath' => null,
 		], $aOptions);
 
-		$groupIndex = $options['loadMethod'] . '+' . str_pad($options['group'], 10, ' ', STR_PAD_LEFT);
+		$groupIndex = str_pad($options['group'], 10, ' ', STR_PAD_LEFT);
 
 		if (!array_key_exists($groupIndex, $this->items)) {
 			$this->items[$groupIndex] = [];
@@ -104,16 +103,9 @@ class ClientSideIncludes {
 
 
 				if ($resolvedUrl) {
-					$resolvedItem = [
-						'loadMethod' => $item['loadMethod'],
-						'base' => $item['base'],
-						'url' => $item['url'],
-						'resolvedUrl' => $resolvedUrl,
-						'group' => $item['group'],
-						'bundleKey' => $item['bundleKey'],
-						'onlyIfExists' => $item['onlyIfExists'],
-						'fileFilePath' => $resolvedFileFilePath,
-					];
+					$resolvedItem = $item;
+					$resolvedItem['resolvedUrl'] = $resolvedUrl;
+					$resolvedItem['fileFilePath'] = $resolvedFileFilePath;
 
 					$resolvedItems[] = $resolvedItem;
 					$groupItemCounter++;

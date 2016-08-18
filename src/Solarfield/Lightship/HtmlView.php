@@ -35,13 +35,11 @@ abstract class HtmlView extends View {
 		$includes->addFile('app/App/Environment', [
 			'loadMethod' => 'dynamic',
 			'group' => 1000000,
-			'bundleKey' => 'app',
 		]);
 
 		$includes->addFile('app/App/Controller', [
 			'loadMethod' => 'dynamic',
 			'group' => 1000000,
-			'bundleKey' => 'app',
 		]);
 
 		if (array_key_exists('module', $chain)) {
@@ -52,7 +50,6 @@ abstract class HtmlView extends View {
 				'onlyIfExists' => true,
 				'filePath' => '/Controller.js',
 				'group' => 1250000,
-				'bundleKey' => 'module',
 			]);
 		}
 
