@@ -19,36 +19,11 @@
 		{
 			"type": "vcs",
 			"url": "https://github.com/solarfield/batten-php.git"
-		},
-
-		{
-			"type": "vcs",
-			"url": "https://github.com/solarfield/ok-kit-php.git"
-		},
-
-		{
-			"type": "vcs",
-			"url": "https://github.com/solarfield/lightship-js.git"
-		},
-
-		{
-			"type": "package",
-			"package": {
-				"name": "systemjs/systemjs",
-				"version": "0.19.8",
-				"source": {
-					"type": "git",
-					"url": "https://github.com/systemjs/systemjs",
-					"reference": "tags/0.19.8"
-				}
-			}
 		}
 	],
 
 	"require": {
 		"solarfield/batten-php": "dev-master",
-		"solarfield/ok-kit-php": "dev-master",
-		"solarfield/lightship-js": "dev-master",
-		"systemjs/systemjs": "^0.19"
+		"solarfield/ok-kit-php": "dev-master"
 	}
 }
