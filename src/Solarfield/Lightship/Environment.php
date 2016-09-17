@@ -8,7 +8,6 @@ require_once \App\DEPENDENCIES_FILE_PATH . '/solarfield/batten-php/src/Solarfiel
 
 abstract class Environment extends \Solarfield\Batten\Environment {
 	static private $chain;
-	static private $config;
 	static private $classLoader;
 
 	static public function getBaseChain() {
@@ -24,10 +23,6 @@ abstract class Environment extends \Solarfield\Batten\Environment {
 		return self::$chain;
 	}
 
-	static protected function getConfig() {
-		return self::$config;
-	}
-
 	static protected function getClassLoader() {
 		if (!self::$classLoader) {
 			include_once __DIR__ . '/ClassLoader.php';
@@ -41,8 +36,6 @@ abstract class Environment extends \Solarfield\Batten\Environment {
 		parent::init($aOptions);
 
 		error_reporting(E_ALL | E_STRICT);
-
-		self::$config = array_key_exists('config', $aOptions) ? $aOptions['config'] : [];
 
 
 		//init projectPackageFilePath
