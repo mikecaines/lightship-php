@@ -6,11 +6,14 @@ use Solarfield\Ok\StructUtils;
 
 abstract class Controller extends \Solarfield\Batten\Controller {
 	static public function bootstrap() {
+		$exitCode = 1;
+
 		try {
 			if (($controller = static::boot())) {
 				try {
 					$controller->connect();
 					$controller->run();
+					$exitCode = 0;
 				}
 				catch (Exception $ex) {
 					$controller->handleException($ex);
@@ -21,6 +24,8 @@ abstract class Controller extends \Solarfield\Batten\Controller {
 		catch (Exception $ex) {
 			static::bail($ex);
 		}
+
+		return $exitCode;
 	}
 
 	private function resolvePluginDependencies_step($plugin) {
