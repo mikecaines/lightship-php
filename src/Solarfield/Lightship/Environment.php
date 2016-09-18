@@ -2,13 +2,11 @@
 namespace Solarfield\Lightship;
 
 use Exception;
+use Solarfield\Ok\MiscUtils;
 use Solarfield\Ok\StructUtils;
-
-require_once \App\DEPENDENCIES_FILE_PATH . '/solarfield/batten-php/src/Solarfield/Batten/Environment.php';
 
 abstract class Environment extends \Solarfield\Batten\Environment {
 	static private $chain;
-	static private $classLoader;
 
 	static public function getBaseChain() {
 		if (!self::$chain) {
@@ -23,19 +21,10 @@ abstract class Environment extends \Solarfield\Batten\Environment {
 		return self::$chain;
 	}
 
-	static protected function getClassLoader() {
-		if (!self::$classLoader) {
-			include_once __DIR__ . '/ClassLoader.php';
-			self::$classLoader = new ClassLoader();
-		}
-
-		return self::$classLoader;
-	}
-
 	static public function init($aOptions) {
 		parent::init($aOptions);
 
-		error_reporting(E_ALL | E_STRICT);
+		static::getVars()->add('requestId', MiscUtils::guid());
 
 
 		//init projectPackageFilePath
@@ -80,7 +69,6 @@ abstract class Environment extends \Solarfield\Batten\Environment {
 		static::getVars()->add('composerVendorFilePath', $path);
 
 
-		//register the class loader
-		spl_autoload_register([static::getClassLoader(), 'handleClassAutoload'], true, true);
+		static::getVars()->add('appDependenciesFilePath', static::getVars()->get('composerVendorFilePath'));
 	}
 }
