@@ -204,7 +204,10 @@ abstract class WebController extends Controller {
 
 		else {
 			//log the error
-			Env::getLogger()->error('Encountered exception.', ['exception'=>$aEx]);
+			Env::getLogger()->error((string)$aEx, [
+				'requestId' => Env::getVars()->get('requestId'),
+				'exception' => $aEx
+			]);
 		}
 
 		//reboot to the 'Error' module.
