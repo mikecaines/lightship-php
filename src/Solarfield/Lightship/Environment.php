@@ -27,48 +27,25 @@ abstract class Environment extends \Solarfield\Batten\Environment {
 		static::getVars()->add('requestId', MiscUtils::guid());
 
 
-		//init projectPackageFilePath
-
-		if (!array_key_exists('projectPackageFilePath', $aOptions)) {
-			throw new Exception(
-				"The projectPackageFilePath option must be specified when calling " . __METHOD__ . "."
-			);
-		}
-
-		$path = realpath($aOptions['projectPackageFilePath']);
-
-		if (!$path) {
-			throw new Exception(
-				"Invalid projectPackageFilePath: '" . $aOptions['projectPackageFilePath'] . "'."
-			);
-		}
-
-		static::getVars()->add('projectPackageFilePath', $path);
-
+		//set the project package file path
+		//This is the top level directory that contains composer's vendor dir, www, etc.
+		if (!array_key_exists('projectPackageFilePath', $aOptions)) throw new Exception(
+			"The projectPackageFilePath option must be specified when calling " . __METHOD__ . "."
+		);
+		$projectPackageFilePath = realpath($aOptions['projectPackageFilePath']);
+		if (!$projectPackageFilePath) throw new Exception(
+			"Invalid projectPackageFilePath: '" . $aOptions['projectPackageFilePath'] . "'."
+		);
+		static::getVars()->add('projectPackageFilePath', $projectPackageFilePath);
 
 		//set the php error log path
 		ini_set('error_log', static::getVars()->get('projectPackageFilePath') . '/files/logs/php/php.log');
 
-
-		//init composerVendorFilePath
-
-		if (!array_key_exists('composerVendorFilePath', $aOptions)) {
-			throw new Exception(
-				"The composerVendorFilePath option must be specified when calling " . __METHOD__ . "."
-			);
-		}
-
-		$path = realpath($aOptions['composerVendorFilePath']);
-
-		if (!$path) {
-			throw new Exception(
-				"Invalid composerVendorFilePath: '" . $aOptions['composerVendorFilePath'] . "'."
-			);
-		}
-
-		static::getVars()->add('composerVendorFilePath', $path);
-
-
-		static::getVars()->add('appDependenciesFilePath', static::getVars()->get('composerVendorFilePath'));
+		//set the app dependencies dir path (i.e. composer's vendor dir)
+		$path = $projectPackageFilePath . DIRECTORY_SEPARATOR . 'vendor';
+		if (!is_dir($path)) throw new Exception(
+			"Did not find composer's vendor directory at $path. Have you run 'composer install' yet?"
+		);
+		static::getVars()->add('appDependenciesFilePath', $path);
 	}
 }
