@@ -12,8 +12,8 @@ abstract class View extends \Solarfield\Batten\View {
 		);
 	}
 
-	protected function resolveHintedInput() {
-		parent::resolveHintedInput();
+	protected function resolveInput() {
+		parent::resolveInput();
 
 		$this->dispatchEvent(
 			new Event('resolve-hinted-input', ['target' => $this])
