@@ -44,7 +44,7 @@ abstract class Controller extends \Solarfield\Batten\Controller {
 		$plugins = $this->getPlugins();
 
 		foreach ($plugins->getRegistrations() as $registration) {
-			if (($plugin = $plugins->get($registration['installationCode']))) {
+			if (($plugin = $plugins->get($registration['componentCode']))) {
 				$this->resolvePluginDependencies_step($plugin);
 			}
 		}
