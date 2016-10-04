@@ -19,7 +19,21 @@ abstract class WebController extends Controller {
 	}
 
 	static public function getInitialRoute() {
-		$route = (new Url($_SERVER['REQUEST_URI']))->getPath();
+		//prefer REDIRECT_URL over REQUEST_URI,
+		//so that only the end result of internal apache redirects (e.g. the N flag) are used
+
+		if (array_key_exists('REDIRECT_URL', $_SERVER)) {
+			$url = $_SERVER['REDIRECT_URL'];
+
+			if (array_key_exists('REDIRECT_QUERY_STRING', $_SERVER) && $_SERVER['REDIRECT_QUERY_STRING'] != '') {
+				$url .= '?' . $_SERVER['REDIRECT_QUERY_STRING'];
+			}
+		}
+		else {
+			$url = $_SERVER['REQUEST_URI'];
+		}
+
+		$route = (new Url($url))->getPath();
 		if ($route == '/') $route = '';
 
 		return $route;
