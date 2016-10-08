@@ -121,7 +121,7 @@ abstract class WebController extends Controller {
 
 	public function queueRedirect($aUrl, $aOptions = []) {
 		$options = array_replace([
-			'httpStatusCode' => 301,
+			'httpStatusCode' => 302,
 		], $aOptions);
 
 		$this->getModel()->set('app.queuedRedirect', [
