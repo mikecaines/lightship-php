@@ -3,6 +3,7 @@ namespace Solarfield\Lightship;
 
 use App\Environment as Env;
 use Exception;
+use Solarfield\Batten\UnresolvedRouteException;
 use Solarfield\Ok\Event;
 use Solarfield\Batten\StandardOutputEvent;
 use Solarfield\Ok\Url;
@@ -212,15 +213,26 @@ abstract class WebController extends Controller {
 	}
 
 	public function handleException(Exception $aEx) {
-		if ($aEx instanceof UserFriendlyException) {
+		$finalEx = $aEx;
+
+		if ($finalEx instanceof UserFriendlyException) {
 			//do nothing, as UserFriendlyException's are considered low-priority
 		}
 
 		else {
+			//if the exception is due to an unresolved route
+			if ($finalEx instanceof UnresolvedRouteException) {
+				//interpret it as a 404, and wrap the original exception
+				$finalEx = new HttpException(
+					$finalEx->getMessage(), $finalEx->getCode(), $finalEx,
+					404
+				);
+			}
+
 			//log the error
-			Env::getLogger()->error((string)$aEx, [
+			Env::getLogger()->error((string)$finalEx, [
 				'requestId' => Env::getVars()->get('requestId'),
-				'exception' => $aEx
+				'exception' => $finalEx
 			]);
 		}
 
@@ -234,7 +246,7 @@ abstract class WebController extends Controller {
 			'hints' => [
 				'app' => [
 					'errorState' => [
-						'error' => $aEx,
+						'error' => $finalEx,
 					],
 				],
 			],
