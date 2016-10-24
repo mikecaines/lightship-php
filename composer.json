@@ -24,6 +24,6 @@
 
 	"require": {
 		"solarfield/batten-php": "dev-master",
-		"solarfield/ok-kit-php": "dev-master"
+		"solarfield/ok-kit-php": "^0.0"
 	}
 }
