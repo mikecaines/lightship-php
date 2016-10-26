@@ -15,15 +15,8 @@
 		"bin/lightship.phar"
 	],
 
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "https://github.com/solarfield/batten-php.git"
-		}
-	],
-
 	"require": {
-		"solarfield/batten-php": "dev-master",
+		"solarfield/batten-php": "^0.0",
 		"solarfield/ok-kit-php": "^0.0"
 	}
 }
