@@ -70,10 +70,6 @@ abstract class WebController extends Controller {
 
 	}
 
-	protected function onBeforeDoTask(DoTaskEvent $aEvt) {
-
-	}
-
 	protected function onDoTask(DoTaskEvent $aEvt) {
 		$hints = $this->getHints();
 		$moduleOptions = $this->getOptions();
@@ -220,14 +216,6 @@ abstract class WebController extends Controller {
 	}
 
 	public function doTask() {
-		$event = new DoTaskEvent('before-do-task', ['target' => $this]);
-
-		$this->dispatchEvent($event, [
-			'listener' => [$this, 'onBeforeDoTask'],
-		]);
-
-		$this->dispatchEvent($event);
-
 		$event = new DoTaskEvent('do-task', ['target' => $this]);
 
 		$this->dispatchEvent($event, [
