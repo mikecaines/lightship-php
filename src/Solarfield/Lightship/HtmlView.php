@@ -2,7 +2,12 @@
 namespace Solarfield\Lightship;
 
 use App\Environment as Env;
-use Solarfield\Ok\Event;
+use Solarfield\Lightship\Events\CreateHtmlEvent;
+use Solarfield\Lightship\Events\ResolveHintsEvent;
+use Solarfield\Lightship\Events\ResolveScriptIncludesEvent;
+use Solarfield\Lightship\Events\ResolveStyleIncludesEvent;
+
+
 use Solarfield\Ok\HtmlUtils;
 use Solarfield\Ok\JsonUtils;
 
@@ -11,22 +16,43 @@ abstract class HtmlView extends View {
 	private $scriptIncludes;
 	private $jsEnvironment;
 
-	protected function resolveHints() {
-		$hints = $this->getHints();
-		$hints->set('doLoadServerData', true);
-
-		$this->dispatchEvent(
-			new Event('resolve-hints', ['target' => $this])
-		);
-	}
-
 	protected function resolveStyleIncludes() {
-		$this->dispatchEvent(
-			new Event('resolve-style-includes', ['target' => $this])
-		);
+		$event = new ResolveStyleIncludesEvent('resolve-style-includes', ['target' => $this]);
+
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onResolveStyleIncludes'],
+		]);
+
+		$this->dispatchEvent($event);
 	}
 
 	protected function resolveScriptIncludes() {
+		$event = new ResolveScriptIncludesEvent('resolve-script-includes', ['target' => $this]);
+
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onResolveScriptIncludes'],
+		]);
+
+		$this->dispatchEvent($event);
+	}
+
+	protected function resolveJsEnvironment() {
+		$appSourceWebPath = Env::getVars()->get('appSourceWebPath');
+		$depsPath = Env::getVars()->get('appDependenciesWebPath');
+
+		$this->getJsEnvironment()->merge([
+			'systemConfig' => [
+				'paths' => [
+					'solarfield/batten-js/*' => "$depsPath/solarfield/batten-js/*.js",
+					'solarfield/lightship-js/*' => "$depsPath/solarfield/lightship-js/*.js",
+					'solarfield/ok-kit-js/*' => "$depsPath/solarfield/ok-kit-js/*.js",
+					'app/*' => "$appSourceWebPath/*.js",
+				],
+			],
+		]);
+	}
+
+	protected function onResolveScriptIncludes(ResolveScriptIncludesEvent $aEvt) {
 		$includes = $this->getScriptIncludes();
 
 		$moduleCode = $this->getCode();
@@ -52,26 +78,55 @@ abstract class HtmlView extends View {
 				'group' => 1250000,
 			]);
 		}
-
-		$this->dispatchEvent(
-			new Event('resolve-script-includes', ['target' => $this])
-		);
 	}
 
-	protected function resolveJsEnvironment() {
-		$appSourceWebPath = Env::getVars()->get('appSourceWebPath');
-		$depsPath = Env::getVars()->get('appDependenciesWebPath');
+	protected function onResolveStyleIncludes(ResolveStyleIncludesEvent $aEvt) {
 
-		$this->getJsEnvironment()->merge([
-			'systemConfig' => [
-				'paths' => [
-					'solarfield/batten-js/*' => "$depsPath/solarfield/batten-js/*.js",
-					'solarfield/lightship-js/*' => "$depsPath/solarfield/lightship-js/*.js",
-					'solarfield/ok-kit-js/*' => "$depsPath/solarfield/ok-kit-js/*.js",
-					'app/*' => "$appSourceWebPath/*.js",
-				],
-			],
-		]);
+	}
+
+	protected function onResolveHints(ResolveHintsEvent $aEvt) {
+		parent::onResolveHints($aEvt);
+
+		$hints = $this->getHints();
+		$hints->set('doLoadServerData', true);
+	}
+
+	protected function onCreateScriptElements(CreateHtmlEvent $aEvt) {
+		$this->resolveScriptIncludes();
+		$items = $this->getScriptIncludes()->getResolvedFiles();
+
+		ob_start();
+
+		foreach ($items as $item) {
+			if ($item['loadMethod'] == 'static') {
+				?>
+				<script type="text/javascript" src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
+				<?php
+			}
+
+			else if ($item['loadMethod'] == 'dynamic') {
+				?>
+				<script type="text/javascript" data-src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
+				<?php
+			}
+		}
+
+		$aEvt->getHtml()->append(ob_get_clean());
+	}
+
+	protected function onCreateStyleElements(CreateHtmlEvent $aEvt) {
+		$this->resolveStyleIncludes();
+		$items = $this->getStyleIncludes()->getResolvedFiles();
+
+		ob_start();
+
+		foreach ($items as $item) {
+			?>
+			<link rel="stylesheet" type="text/css" href="<?php $this->out($item['resolvedUrl']); ?>"/>
+			<?php
+		}
+
+		$aEvt->getHtml()->append(ob_get_clean());
 	}
 
 	public function createDocument() {
@@ -125,26 +180,15 @@ abstract class HtmlView extends View {
 	}
 
 	public function createStyleElements() {
-		$this->resolveStyleIncludes();
-		$items = $this->getStyleIncludes()->getResolvedFiles();
+		$event = new CreateHtmlEvent('create-style-elements', ['target' => $this]);
 
-		ob_start();
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onCreateStyleElements'],
+		]);
 
-		foreach ($items as $item) {
-			?>
-			<link rel="stylesheet" type="text/css" href="<?php $this->out($item['resolvedUrl']); ?>"/>
-			<?php
-		}
+		$this->dispatchEvent($event);
 
-		$buffer = '';
-
-		$this->dispatchEvent(
-			new ArrayBufferEvent('create-style-elements', ['target' => $this], $buffer)
-		);
-
-		echo($buffer);
-
-		return ob_get_clean();
+		return $event->getHtml();
 	}
 
 	public function getScriptIncludes() {
@@ -163,34 +207,15 @@ abstract class HtmlView extends View {
 	 * @return string
 	 */
 	public function createScriptElements() {
-		$this->resolveScriptIncludes();
-		$items = $this->getScriptIncludes()->getResolvedFiles();
+		$event = new CreateHtmlEvent('create-script-elements', ['target' => $this]);
 
-		ob_start();
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onCreateScriptElements'],
+		]);
 
-		foreach ($items as $item) {
-			if ($item['loadMethod'] == 'static') {
-				?>
-				<script type="text/javascript" src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
-				<?php
-			}
+		$this->dispatchEvent($event);
 
-			else if ($item['loadMethod'] == 'dynamic') {
-				?>
-				<script type="text/javascript" data-src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
-				<?php
-			}
-		}
-
-		$buffer = '';
-
-		$this->dispatchEvent(
-			new ArrayBufferEvent('create-script-elements', ['target' => $this], $buffer)
-		);
-
-		echo($buffer);
-
-		return ob_get_clean();
+		return $event->getHtml();
 	}
 
 	public function getJsEnvironment() {

@@ -1,8 +1,10 @@
 <?php
 namespace Solarfield\Lightship;
 
-use Solarfield\Ok\Event;
+use Solarfield\Lightship\Events\CreateJsonDataEvent;
+use Solarfield\Lightship\Events\ResolveJsonDataRulesEvent;
 use Solarfield\Batten\Flags;
+
 use Solarfield\Ok\JsonUtils;
 use Solarfield\Ok\StructUtils;
 
@@ -10,12 +12,31 @@ class JsonView extends View {
 	private $rules;
 
 	protected function resolveDataRules() {
+		$event = new ResolveJsonDataRulesEvent('resolve-data-rules', ['target' => $this]);
+
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onResolveDataRules'],
+		]);
+
+		$this->dispatchEvent($event);
+	}
+
+	protected function onResolveDataRules(ResolveJsonDataRulesEvent $aEvt) {
 		$rules = $this->getDataRules();
 		$rules->set('app.standardOutput');
+	}
 
-		$this->dispatchEvent(
-			new Event('resolve-data-rules', ['target' => $this])
-		);
+	protected function onCreateJsonData(CreateJsonDataEvent $aEvt) {
+		$model = $this->getModel();
+		$rules = $this->getDataRules()->toArray();
+
+		foreach ($rules as $k) {
+			$s = StructUtils::scout($model, $k);
+
+			if ($s[0]) {
+				$aEvt->getJsonData()->set($k, $s[1]);
+			}
+		}
 	}
 
 	public function getDataRules() {
@@ -27,29 +48,15 @@ class JsonView extends View {
 	}
 
 	public function createJsonData() {
-		$jsonData = [];
-		$model = $this->getModel();
-		$rules = $this->getDataRules()->toArray();
+		$event = new CreateJsonDataEvent('create-json-data', ['target' => $this]);
 
-		foreach ($rules as $k) {
-			$s = StructUtils::scout($model, $k);
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onCreateJsonData'],
+		]);
 
-			if ($s[0]) {
-				StructUtils::set($jsonData, $k, $s[1]);
-			}
-		}
+		$this->dispatchEvent($event);
 
-		$buffer = [];
-
-		$this->dispatchEvent(
-			new ArrayBufferEvent('create-json-data', ['target' => $this], $buffer)
-		);
-
-		if (count($buffer) > 0) {
-			$jsonData = StructUtils::merge($jsonData, $buffer);
-		}
-
-		return $jsonData;
+		return $event->getJsonData()->getData();
 	}
 
 	public function createJson() {

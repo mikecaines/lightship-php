@@ -4,7 +4,9 @@ namespace Solarfield\Lightship;
 use App\Environment as Env;
 use Exception;
 use Solarfield\Batten\UnresolvedRouteException;
-use Solarfield\Ok\Event;
+use Solarfield\Lightship\Events\DoTaskEvent;
+use Solarfield\Lightship\Events\ProcessRouteEvent;
+use Solarfield\Lightship\Events\ResolveOptionsEvent;
 use Solarfield\Batten\StandardOutputEvent;
 use Solarfield\Ok\Url;
 
@@ -45,13 +47,54 @@ abstract class WebController extends Controller {
 	protected function resolveOptions() {
 		parent::resolveOptions();
 
+		$event = new ResolveOptionsEvent('resolve-options', ['target' => $this]);
+
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onResolveOptions'],
+		]);
+
+		$this->dispatchEvent($event);
+	}
+
+	protected function onResolveOptions(ResolveOptionsEvent $aEvt) {
 		$options = $this->getOptions();
 		$options->add('app.allowCachedResponse', true);
 		$options->add('app.allowStoredResponse', true);
+	}
 
-		$this->dispatchEvent(
-			new Event('resolve-options', ['target' => $this])
-		);
+	/**
+	 * @param ProcessRouteEvent $aEvt
+	 * @return array|null
+	 */
+	protected function onProcessRoute(ProcessRouteEvent $aEvt) {
+
+	}
+
+	protected function onBeforeDoTask(DoTaskEvent $aEvt) {
+
+	}
+
+	protected function onDoTask(DoTaskEvent $aEvt) {
+		$hints = $this->getHints();
+		$moduleOptions = $this->getOptions();
+
+		$cacheControl = [];
+		if (!$moduleOptions->get('app.allowCachedResponse')) {
+			$cacheControl['no-cache'] = true;
+			$cacheControl['must-revalidate'] = null;
+		}
+		if (!$moduleOptions->get('app.allowStoredResponse')) {
+			$cacheControl['no-cache'] = true;
+			$cacheControl['must-revalidate'] = null;
+			$cacheControl['no-store'] = null;
+		}
+		if ($cacheControl) {
+			header('Cache-Control: ' . implode(', ', array_keys($cacheControl)));
+		}
+
+		if ($hints->get('doLoadServerData')) {
+			$this->doLoadServerData();
+		}
 	}
 
 	protected function doLoadServerData() {
@@ -86,22 +129,17 @@ abstract class WebController extends Controller {
 
 	public function processRoute($aInfo) {
 		$info = parent::processRoute($aInfo);
-		if ($info) return $info;
 
-		$buffer = [
-			'inputRoute' => $aInfo,
-			'outputRoute' => null,
-		];
+		$event = new ProcessRouteEvent('process-route', ['target' => $this]);
+		$event->setRoute($info);
 
-		$this->dispatchEvent(
-			new ArrayBufferEvent('process-route', ['target' => $this], $buffer)
-		);
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onProcessRoute'],
+		]);
 
-		if ($buffer['outputRoute']) {
-			return $buffer['outputRoute'];
-		}
+		$this->dispatchEvent($event);
 
-		return null;
+		return $event->getRoute();
 	}
 
 	public function getRequestedViewType() {
@@ -182,34 +220,21 @@ abstract class WebController extends Controller {
 	}
 
 	public function doTask() {
-		$this->dispatchEvent(
-			new Event('before-do-task', ['target' => $this])
-		);
+		$event = new DoTaskEvent('before-do-task', ['target' => $this]);
 
-		$hints = $this->getHints();
-		$moduleOptions = $this->getOptions();
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onBeforeDoTask'],
+		]);
 
-		$cacheControl = [];
-		if (!$moduleOptions->get('app.allowCachedResponse')) {
-			$cacheControl['no-cache'] = true;
-			$cacheControl['must-revalidate'] = null;
-		}
-		if (!$moduleOptions->get('app.allowStoredResponse')) {
-			$cacheControl['no-cache'] = true;
-			$cacheControl['must-revalidate'] = null;
-			$cacheControl['no-store'] = null;
-		}
-		if ($cacheControl) {
-			header('Cache-Control: ' . implode(', ', array_keys($cacheControl)));
-		}
+		$this->dispatchEvent($event);
 
-		if ($hints->get('doLoadServerData')) {
-			$this->doLoadServerData();
-		}
+		$event = new DoTaskEvent('do-task', ['target' => $this]);
 
-		$this->dispatchEvent(
-			new Event('do-task', ['target' => $this])
-		);
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onDoTask'],
+		]);
+
+		$this->dispatchEvent($event);
 	}
 
 	public function handleException(Exception $aEx) {
