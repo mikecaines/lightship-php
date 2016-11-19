@@ -31,10 +31,13 @@ abstract class Controller extends \Solarfield\Batten\Controller {
 	private function resolvePluginDependencies_step($plugin) {
 		$plugins = $this->getPlugins();
 
-		foreach ($plugin->getManifest()->getAsArray('dependencies.plugins') as $dep) {
-			if (StructUtils::search($plugins->getRegistrations(), 'componentCode', $dep['code']) === false) {
-				if (($depPlugin = $plugins->register($dep['code']))) {
-					$this->resolvePluginDependencies_step($depPlugin);
+		//if plugin is Lightship-compatible
+		if ($plugin instanceof ControllerPlugin) {
+			foreach ($plugin->getManifest()->getAsArray('dependencies.plugins') as $dep) {
+				if (StructUtils::search($plugins->getRegistrations(), 'componentCode', $dep['code']) === false) {
+					if (($depPlugin = $plugins->register($dep['code']))) {
+						$this->resolvePluginDependencies_step($depPlugin);
+					}
 				}
 			}
 		}
