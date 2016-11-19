@@ -64,7 +64,6 @@ abstract class WebController extends Controller {
 
 	/**
 	 * @param ProcessRouteEvent $aEvt
-	 * @return array|null
 	 */
 	protected function onProcessRoute(ProcessRouteEvent $aEvt) {
 
