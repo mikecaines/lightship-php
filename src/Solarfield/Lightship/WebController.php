@@ -9,6 +9,7 @@ use Solarfield\Lightship\Events\ProcessRouteEvent;
 use Solarfield\Lightship\Events\ResolveOptionsEvent;
 use Solarfield\Batten\StandardOutputEvent;
 use Solarfield\Ok\Url;
+use Throwable;
 
 /**
  * Class WebController
@@ -224,7 +225,7 @@ abstract class WebController extends Controller {
 		$this->dispatchEvent($event);
 	}
 
-	public function handleException(Exception $aEx) {
+	public function handleException(Throwable $aEx) {
 		$finalEx = $aEx;
 
 		if ($finalEx instanceof UserFriendlyException) {

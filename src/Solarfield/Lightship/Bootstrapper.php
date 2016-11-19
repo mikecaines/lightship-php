@@ -1,6 +1,8 @@
 <?php
 namespace Solarfield\Lightship;
 
+use Throwable;
+
 abstract class Bootstrapper {
 	/**
 	 * @param array $aOptions
@@ -26,7 +28,7 @@ abstract class Bootstrapper {
 			$exitCode = \App\Controller::bootstrap();
 		}
 
-		catch (\Exception $e) {
+		catch (Throwable $e) {
 			error_log($e);
 		}
 

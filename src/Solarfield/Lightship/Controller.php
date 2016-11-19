@@ -1,8 +1,8 @@
 <?php
 namespace Solarfield\Lightship;
 
-use Exception;
 use Solarfield\Ok\StructUtils;
+use Throwable;
 
 abstract class Controller extends \Solarfield\Batten\Controller {
 	static public function bootstrap() {
@@ -15,13 +15,13 @@ abstract class Controller extends \Solarfield\Batten\Controller {
 					$controller->run();
 					$exitCode = 0;
 				}
-				catch (Exception $ex) {
+				catch (Throwable $ex) {
 					$controller->handleException($ex);
 				}
 			}
 		}
 
-		catch (Exception $ex) {
+		catch (Throwable $ex) {
 			static::bail($ex);
 		}
 
