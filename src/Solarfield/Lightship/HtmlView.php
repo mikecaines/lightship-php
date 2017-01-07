@@ -306,29 +306,10 @@ abstract class HtmlView extends View {
 					})
 				)
 				.then(function () {
-					var controller;
-
 					if (self.App && App.Environment) {
 						App.DEBUG = <?php echo(JsonUtils::toJson(\App\DEBUG)) ?>;
 						App.Environment.init(<?php echo(JsonUtils::toJson($envInitData)) ?>);
-
-						if (App.Controller) {
-							try {
-								if ((controller = App.Controller.boot(<?php echo(JsonUtils::toJson($bootInfo)); ?>))) {
-									controller.connect()
-									.then(function () {
-										App.controller = controller;
-										controller.run();
-									})
-									.catch(function (e) {
-										controller.handleException(e);
-									});
-								}
-							}
-							catch (e) {
-								App.Controller.bail(e);
-							}
-						}
+						App.Controller.bootstrap({bootInfo:<?php echo(JsonUtils::toJson($bootInfo)); ?>});
 					}
 				})
 				.catch(function (e) {
