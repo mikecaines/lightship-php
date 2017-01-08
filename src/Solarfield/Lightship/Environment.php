@@ -12,10 +12,11 @@ abstract class Environment extends \Solarfield\Batten\Environment {
 		if (!self::$chain) {
 			self::$chain = parent::getBaseChain();
 
-			self::$chain = StructUtils::insertBefore(self::$chain, 'app', 'solarfield/lightship-php', [
+			array_splice(self::$chain, StructUtils::search(self::$chain, 'id', 'app'), 0, [[
+				'id' => 'solarfield/lightship-php',
 				'namespace' => __NAMESPACE__,
 				'path' => __DIR__,
-			]);
+			]]);
 		}
 
 		return self::$chain;
