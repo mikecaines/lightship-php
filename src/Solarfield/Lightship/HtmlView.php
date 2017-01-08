@@ -37,9 +37,12 @@ abstract class HtmlView extends View {
 	}
 
 	protected function resolveJsEnvironment() {
+		$env = $this->getJsEnvironment();
 		$appSourceWebPath = Env::getVars()->get('appSourceWebPath');
 		$depsPath = Env::getVars()->get('appDependenciesWebPath');
-
+		
+		$env->push('forwardedChainLinks', 'app');
+		
 		$this->getJsEnvironment()->merge([
 			'systemConfig' => [
 				'paths' => [
@@ -86,9 +89,7 @@ abstract class HtmlView extends View {
 
 	protected function onResolveHints(ResolveHintsEvent $aEvt) {
 		parent::onResolveHints($aEvt);
-
-		$hints = $this->getHints();
-		$hints->set('doLoadServerData', true);
+		
 	}
 
 	protected function onCreateScriptElements(CreateHtmlEvent $aEvt) {
@@ -268,13 +269,29 @@ abstract class HtmlView extends View {
 	 * @return mixed|string
 	 */
 	public function createBootstrapScriptElements() {
-		$model = $this->getModel();
-		$serverData = $model->get('app.serverData');
-
 		$envInitData = [
-			'baseChain' => $serverData['baseChain'],
+			'baseChain' => [],
 		];
+		
+		//get forwarded base chain links
+		$forwards = $this->getJsEnvironment()->get('forwardedChainLinks')??[]; //copy
+		foreach (Env::getBaseChain() as $k => $link) {
+			if (in_array($k, $forwards)) {
+				$link = array_replace([
+					'pluginsSubNamespace' => '\\Plugins',
+				], $link);
+				
+				$envInitData['baseChain'][$k] = array(
+					'namespace' => str_replace('\\', '.', $link['namespace']),
+					'pluginsSubNamespace' => array_key_exists('pluginsSubNamespace', $link) ? str_replace('\\', '.', $link['pluginsSubNamespace']) : null,
+				);
+				
+				unset($forwards[$k]);
+			}
+		}
+		unset($forwards, $k, $link);
 
+		//get forwarded environment vars
 		$vars = [];
 		foreach (($this->getJsEnvironment()->get('forwardedVars')?:[]) as $k) $vars[$k] = Environment::getVars()->get($k);
 		if ($vars) $envInitData['vars'] = $vars;
@@ -282,10 +299,24 @@ abstract class HtmlView extends View {
 		$bootInfo = [
 			'moduleCode' => $this->getCode(),
 			'controllerOptions' => [
-				'pluginRegistrations' => $serverData['pluginRegistrations'],
+				'pluginRegistrations' => [],
 			],
 		];
+		
+		//get forwarded plugin registrations
+		$forwards = $this->getJsEnvironment()->get('forwardedPluginRegistrations')??[]; //copy
+		foreach ($this->getPlugins()->getRegistrations() as $k => $registration) {
+			if (in_array($registration['componentCode'], $forwards)) {
+				$bootInfo['controllerOptions']['pluginRegistrations'][] = [
+					'componentCode' => $registration['componentCode'],
+				];
+				
+				unset($forwards[$k]);
+			}
+		}
+		unset($forwards, $k, $registration);
 
+		//get pending data
 		/** @var JsonView $jsonView */
 		$jsonView = $this->getController()->createView('Json');
 		$jsonView->setController($this->getController());

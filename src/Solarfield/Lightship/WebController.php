@@ -71,7 +71,6 @@ abstract class WebController extends Controller {
 	}
 
 	protected function onDoTask(DoTaskEvent $aEvt) {
-		$hints = $this->getHints();
 		$moduleOptions = $this->getOptions();
 
 		$cacheControl = [];
@@ -87,40 +86,6 @@ abstract class WebController extends Controller {
 		if ($cacheControl) {
 			header('Cache-Control: ' . implode(', ', array_keys($cacheControl)));
 		}
-
-		if ($hints->get('doLoadServerData')) {
-			$this->doLoadServerData();
-		}
-	}
-
-	protected function doLoadServerData() {
-		$model = $this->getModel();
-
-		$baseChain = array();
-		foreach (Env::getBaseChain() as $k => $v) {
-			//TODO: this should be defaulted elsewhere
-			$v = array_replace([
-				'exposeToClient' => false,
-				'namespace' => null,
-				'pluginsSubNamespace' => '\\Plugins',
-			], $v);
-
-			if ($v['exposeToClient']) {
-				$link = array(
-					'namespace' => str_replace('\\', '.', $v['namespace']),
-					'pluginsSubNamespace' => array_key_exists('pluginsSubNamespace', $v) ? str_replace('\\', '.', $v['pluginsSubNamespace']) : null,
-				);
-
-				$baseChain[$k] = $link;
-			}
-		}
-
-		$serverData = [
-			'pluginRegistrations' => $this->getPlugins()->getRegistrations(),
-			'baseChain' => $baseChain,
-		];
-
-		$model->set('app.serverData', $serverData);
 	}
 
 	public function processRoute($aInfo) {
