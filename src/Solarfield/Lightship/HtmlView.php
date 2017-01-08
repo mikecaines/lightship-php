@@ -10,6 +10,7 @@ use Solarfield\Lightship\Events\ResolveStyleIncludesEvent;
 
 use Solarfield\Ok\HtmlUtils;
 use Solarfield\Ok\JsonUtils;
+use Solarfield\Ok\StructUtils;
 
 abstract class HtmlView extends View {
 	private $styleIncludes;
@@ -71,8 +72,9 @@ abstract class HtmlView extends View {
 			'group' => 1000000,
 		]);
 
-		if (array_key_exists('module', $chain)) {
-			$dirs = str_replace('\\', '/', $chain['module']['namespace']);
+		$link = StructUtils::find($chain, 'id', 'module');
+		if ($link) {
+			$dirs = str_replace('\\', '/', $link['namespace']);
 			$includes->addFile("app/$dirs/Controller", [
 				'loadMethod' => 'dynamic',
 				'base' => 'module',

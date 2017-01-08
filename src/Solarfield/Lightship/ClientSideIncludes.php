@@ -2,6 +2,7 @@
 namespace Solarfield\Lightship;
 
 use App\Environment as Env;
+use Solarfield\Ok\StructUtils;
 
 class ClientSideIncludes {
 	private $view;
@@ -46,10 +47,10 @@ class ClientSideIncludes {
 					$chain = $this->view->getController()->getChain($moduleCode);
 
 					if ($item['base'] == 'app') {
-						$link = array_key_exists('app', $chain) ? $chain['app'] : null;
+						$link = StructUtils::find($chain, 'id', 'app');
 					}
 					else {
-						$link = array_key_exists('module', $chain) ? $chain['module'] : null;
+						$link = StructUtils::find($chain, 'id', 'module');
 					}
 
 					if ($link) {
