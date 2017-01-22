@@ -27,6 +27,10 @@ class WebInput implements \Solarfield\Batten\InputInterface {
 		$value = StructUtils::get($this->data, $aPath);
 		return is_array($value) ? $value : [];
 	}
+	
+	public function has($aPath) {
+		return StructUtils::scout($this->data, $aPath)[0];
+	}
 
 	public function toArray() {
 		return $this->data;
