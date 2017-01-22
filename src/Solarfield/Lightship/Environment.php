@@ -39,9 +39,6 @@ abstract class Environment extends \Solarfield\Batten\Environment {
 		);
 		static::getVars()->add('projectPackageFilePath', $projectPackageFilePath);
 
-		//set the php error log path
-		ini_set('error_log', static::getVars()->get('projectPackageFilePath') . '/files/logs/php/php.log');
-
 		//set the app dependencies dir path (i.e. composer's vendor dir)
 		$path = $projectPackageFilePath . DIRECTORY_SEPARATOR . 'vendor';
 		if (!is_dir($path)) throw new Exception(
