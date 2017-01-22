@@ -7,7 +7,8 @@ class TerminalInput implements \Solarfield\Batten\InputInterface {
 	private $data = [];
 
 	public function getAsString($aPath) {
-		return StructUtils::get($this->data, $aPath);
+		$value = StructUtils::get($this->data, $aPath);
+		return is_array($value) ? '' : (string)$value;
 	}
 
 	public function getAsArray($aPath) {
