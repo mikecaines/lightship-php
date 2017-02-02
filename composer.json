@@ -16,7 +16,7 @@
 	],
 
 	"require": {
-		"solarfield/batten-php": "^0.0",
+		"solarfield/batten-php": "^0.1",
 		"solarfield/ok-kit-php": "^0.0"
 	}
 }
