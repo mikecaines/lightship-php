@@ -11,6 +11,7 @@ class ClientSideIncludes {
 	public function addFile($aUrl, $aOptions = array()) {
 		$options = array_replace([
 			'loadMethod' => 'static', //'static' (i.e. <script>, <link>), 'dynamic' (System.import)
+			'defer' => false,
 			'group' => 2000000,
 			'onlyIfExists' => false,
 			'base' => null, //null, 'app', 'module'

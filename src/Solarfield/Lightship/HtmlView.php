@@ -88,15 +88,19 @@ abstract class HtmlView extends View {
 		ob_start();
 
 		foreach ($items as $item) {
+			$attrs = [];
+			if ($item['defer']) $attrs[] = 'defer';
+			$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
+			
 			if ($item['loadMethod'] == 'static') {
 				?>
-				<script type="text/javascript" src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
+				<script<?php echo($attrs) ?> type="text/javascript" src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
 				<?php
 			}
 
 			else if ($item['loadMethod'] == 'dynamic') {
 				?>
-				<script type="text/javascript" data-src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
+				<script<?php echo($attrs) ?> type="text/javascript" data-src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
 				<?php
 			}
 		}
