@@ -258,29 +258,6 @@ abstract class HtmlView extends View {
 	 * @return mixed|string
 	 */
 	public function createBootstrapScriptElements() {
-		$envInitData = [
-			'baseChain' => [],
-		];
-		
-		//get forwarded base chain links
-		$forwards = $this->getJsEnvironment()->get('forwardedChainLinks')??[]; //copy
-		foreach (Env::getBaseChain() as $link) {
-			if (in_array($link['id'], $forwards)) {
-				$link = array_replace([
-					'pluginsSubNamespace' => '\\Plugins',
-				], $link);
-				
-				$envInitData['baseChain'][] = array(
-					'id' => $link['id'],
-					'namespace' => str_replace('\\', '.', $link['namespace']),
-					'pluginsSubNamespace' => array_key_exists('pluginsSubNamespace', $link) ? str_replace('\\', '.', $link['pluginsSubNamespace']) : null,
-				);
-				
-				unset($forwards[$link['id']]);
-			}
-		}
-		unset($forwards, $k, $link);
-
 		//get forwarded environment vars
 		$vars = [];
 		foreach (($this->getJsEnvironment()->get('forwardedVars')?:[]) as $k) $vars[$k] = Environment::getVars()->get($k);
