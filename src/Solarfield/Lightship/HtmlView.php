@@ -39,21 +39,8 @@ abstract class HtmlView extends View {
 
 	protected function resolveJsEnvironment() {
 		$env = $this->getJsEnvironment();
-		$appSourceWebPath = Env::getVars()->get('appSourceWebPath');
-		$depsPath = Env::getVars()->get('appDependenciesWebPath');
 		
 		$env->push('forwardedChainLinks', 'app');
-		
-		$this->getJsEnvironment()->merge([
-			'systemConfig' => [
-				'paths' => [
-					'solarfield/batten-js/*' => "$depsPath/solarfield/batten-js/*.js",
-					'solarfield/lightship-js/*' => "$depsPath/solarfield/lightship-js/*.js",
-					'solarfield/ok-kit-js/*' => "$depsPath/solarfield/ok-kit-js/*.js",
-					'app/*' => "$appSourceWebPath/*.js",
-				],
-			],
-		]);
 	}
 
 	protected function onResolveScriptIncludes(ResolveScriptIncludesEvent $aEvt) {
