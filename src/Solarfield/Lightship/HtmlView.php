@@ -262,6 +262,8 @@ abstract class HtmlView extends View {
 	 * @return mixed|string
 	 */
 	public function createBootstrapScriptElements() {
+		$envInitData = [];
+		
 		//get forwarded environment vars
 		$vars = [];
 		foreach (($this->getJsEnvironment()->get('forwardedVars')?:[]) as $k) $vars[$k] = Environment::getVars()->get($k);
