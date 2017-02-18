@@ -14,6 +14,7 @@ class ClientSideIncludes {
 			'onlyIfExists' => false,
 			'base' => null, //null, 'app', 'module'
 			'filePath' => null,
+			'bootstrap' => false,
 		], $aOptions);
 
 		$groupIndex = str_pad($options['group'], 10, ' ', STR_PAD_LEFT);
