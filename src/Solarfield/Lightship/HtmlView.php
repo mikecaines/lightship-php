@@ -2,20 +2,16 @@
 namespace Solarfield\Lightship;
 
 use App\Environment as Env;
+use Exception;
 use Solarfield\Lightship\Events\CreateHtmlEvent;
 use Solarfield\Lightship\Events\ResolveHintsEvent;
 use Solarfield\Lightship\Events\ResolveScriptIncludesEvent;
 use Solarfield\Lightship\Events\ResolveStyleIncludesEvent;
-
-
 use Solarfield\Ok\HtmlUtils;
-use Solarfield\Ok\JsonUtils;
-use Solarfield\Ok\StructUtils;
 
 abstract class HtmlView extends View {
 	private $styleIncludes;
 	private $scriptIncludes;
-	private $jsEnvironment;
 
 	protected function resolveStyleIncludes() {
 		$event = new ResolveStyleIncludesEvent('resolve-style-includes', ['target' => $this]);
@@ -37,39 +33,8 @@ abstract class HtmlView extends View {
 		$this->dispatchEvent($event);
 	}
 
-	protected function resolveJsEnvironment() {
-		$env = $this->getJsEnvironment();
-		
-		$env->push('forwardedChainLinks', 'app');
-	}
-
 	protected function onResolveScriptIncludes(ResolveScriptIncludesEvent $aEvt) {
-		$includes = $this->getScriptIncludes();
-
-		$moduleCode = $this->getCode();
-		$chain = $this->getController()->getChain($moduleCode);
-
-		$includes->addFile('app/App/Environment', [
-			'loadMethod' => 'dynamic',
-			'group' => 1000000,
-		]);
-
-		$includes->addFile('app/App/Controller', [
-			'loadMethod' => 'dynamic',
-			'group' => 1000000,
-		]);
-
-		$link = StructUtils::find($chain, 'id', 'module');
-		if ($link) {
-			$dirs = str_replace('\\', '/', $link['namespace']);
-			$includes->addFile("app/$dirs/Controller", [
-				'loadMethod' => 'dynamic',
-				'base' => 'module',
-				'onlyIfExists' => true,
-				'filePath' => '/Controller.js',
-				'group' => 1250000,
-			]);
-		}
+		
 	}
 
 	protected function onResolveStyleIncludes(ResolveStyleIncludesEvent $aEvt) {
@@ -88,20 +53,33 @@ abstract class HtmlView extends View {
 		ob_start();
 
 		foreach ($items as $item) {
+			$item = array_replace([
+				'defer' => false,
+				'bootstrap' => false,
+			], $item);
+			
 			$attrs = [];
-			if ($item['defer']) $attrs[] = 'defer';
+			if ($item['defer']) $attrs[] = "defer";
 			$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
 			
-			if ($item['loadMethod'] == 'static') {
+			if ($item['type'] == 'file') {
+				if (!$item['bootstrap']) {
+					?>
+					<script<?php echo($attrs) ?> src="<?php $this->out($item['resolvedUrl']); ?>"></script>
+					<?php
+				}
+			}
+			
+			else if ($item['type'] == 'inline') {
 				?>
-				<script<?php echo($attrs) ?> type="text/javascript" src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
+				<script<?php echo($attrs) ?>><?php echo(trim($item['content'])); ?></script>
 				<?php
 			}
-
-			else if ($item['loadMethod'] == 'dynamic') {
-				?>
-				<script<?php echo($attrs) ?> type="text/javascript" data-src="<?php $this->out($item['resolvedUrl']); ?>" class="appBootstrapScript"></script>
-				<?php
+			
+			else {
+				throw new Exception(
+					"Unknown client side include type '{$item['type']}'."
+				);
 			}
 		}
 
@@ -115,9 +93,16 @@ abstract class HtmlView extends View {
 		ob_start();
 
 		foreach ($items as $item) {
-			?>
-			<link rel="stylesheet" type="text/css" href="<?php $this->out($item['resolvedUrl']); ?>"/>
-			<?php
+			if ($item['type'] == 'file') {
+				?>
+				<link rel="stylesheet" type="text/css" href="<?php $this->out($item['resolvedUrl']); ?>"/>
+				<?php
+			}
+			else {
+				?>
+				<style type="text/css"><?php echo($item['content']) ?></style>
+				<?php
+			}
 		}
 
 		$aEvt->getHtml()->append(ob_get_clean());
@@ -151,13 +136,10 @@ abstract class HtmlView extends View {
 
 		<title><?php $this->out($this->createTitle()); ?></title>
 		<?php
-
-		echo($this->createStyleElements());
-
-		echo($this->createInitScriptElements());
+		
 		echo($this->createScriptElements());
-		echo($this->createBootstrapScriptElements());
-
+		echo($this->createStyleElements());
+		
 		return ob_get_clean();
 	}
 
@@ -210,125 +192,6 @@ abstract class HtmlView extends View {
 		$this->dispatchEvent($event);
 
 		return $event->getHtml();
-	}
-
-	public function getJsEnvironment() {
-		if (!$this->jsEnvironment) {
-			$this->jsEnvironment = new JsEnvironment();
-		}
-
-		return $this->jsEnvironment;
-	}
-
-	/**
-	 * Creates early-output <script> elements used to set up the script environment.
-	 * @return mixed|string
-	 * @throws \Exception
-	 */
-	public function createInitScriptElements() {
-		$this->resolveJsEnvironment();
-
-		$depsPath = Env::getVars()->get('appDependenciesWebPath');
-		$jsSystemConfig = $this->getJsEnvironment()->get('systemConfig');
-
-		ob_start();
-
-		?>
-		<script type="text/javascript" src="<?php $this->out($depsPath . '/systemjs/systemjs/dist/system-csp-production.js'); ?>" class="appBootstrapScript"></script>
-
-		<script type="text/javascript" class="appBootstrapScript">
-			<?php
-			if ($jsSystemConfig) {
-				?>
-				System.config(<?php echo(JsonUtils::toJson($jsSystemConfig)) ?>);
-				<?php
-			}
-			?>
-
-			window.define = System.amdDefine;
-			window.require = System.amdRequire;
-		</script>
-		<?php
-
-		$html = ob_get_clean();
-		$html = str_replace("\n", '', $html);
-		$html = preg_replace('/\s{2,}/', '', $html);
-
-		return $html;
-	}
-
-	/**
-	 * Creates late-output <script> elements used to bootstrap the script environment.
-	 * @return mixed|string
-	 */
-	public function createBootstrapScriptElements() {
-		$envInitData = [];
-		
-		//get forwarded environment vars
-		$vars = [];
-		foreach (($this->getJsEnvironment()->get('forwardedVars')?:[]) as $k) $vars[$k] = Environment::getVars()->get($k);
-		if ($vars) $envInitData['vars'] = $vars;
-
-		$bootInfo = [
-			'moduleCode' => $this->getCode(),
-			'controllerOptions' => [
-				'pluginRegistrations' => [],
-			],
-		];
-		
-		//get forwarded plugin registrations
-		$forwards = $this->getJsEnvironment()->get('forwardedPluginRegistrations')??[]; //copy
-		foreach ($this->getPlugins()->getRegistrations() as $k => $registration) {
-			if (in_array($registration['componentCode'], $forwards)) {
-				$bootInfo['controllerOptions']['pluginRegistrations'][] = [
-					'componentCode' => $registration['componentCode'],
-				];
-				
-				unset($forwards[$k]);
-			}
-		}
-		unset($forwards, $k, $registration);
-
-		//get pending data
-		/** @var JsonView $jsonView */
-		$jsonView = $this->getController()->createView('Json');
-		$jsonView->setController($this->getController());
-		$jsonView->init();
-		$jsonView->setModel($this->getModel());
-		$pendingData = $jsonView->createJsonData();
-		if ($pendingData) $bootInfo['controllerOptions']['pendingData'] = $pendingData;
-		unset($jsonView, $pendingData);
-
-		ob_start();
-
-		?>
-		<script type="text/javascript" class="appBootstrapScript">
-			(function () {
-				Promise.all(
-					Array.from(document.head.querySelectorAll('script[data-src]'), function (el) {
-						return System.import(el.getAttribute('data-src'));
-					})
-				)
-				.then(function () {
-					if (self.App && App.Environment) {
-						App.DEBUG = <?php echo(JsonUtils::toJson(\App\DEBUG)) ?>;
-						App.Environment.init(<?php echo(JsonUtils::toJson($envInitData)) ?>);
-						App.Controller.bootstrap({bootInfo:<?php echo(JsonUtils::toJson($bootInfo)); ?>});
-					}
-				})
-				.catch(function (e) {
-					if (self.console && console.error) console.error('Bootstrap failed.', e);
-					else throw e;
-				});
-			})();
-		</script>
-		<?php
-
-		$html = ob_get_clean();
-		$html = str_replace("\n", '', $html);
-		$html = preg_replace('/\s{2,}/', '', $html);
-
-		return $html;
 	}
 
 	public function createBodyContent() {
