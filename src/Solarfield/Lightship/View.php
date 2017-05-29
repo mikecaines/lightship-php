@@ -3,9 +3,26 @@ namespace Solarfield\Lightship;
 
 use Solarfield\Lightship\Events\ResolveHintsEvent;
 use Solarfield\Lightship\Events\ResolveInputEvent;
+use Solarfield\Lightship\Events\ResolveOptionsEvent;
 
 
 abstract class View extends \Solarfield\Batten\View {
+	protected function resolveOptions() {
+		parent::resolveOptions();
+		
+		$event = new ResolveOptionsEvent('resolve-options', ['target' => $this]);
+		
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onResolveOptions'],
+		]);
+		
+		$this->dispatchEvent($event);
+	}
+	
+	protected function onResolveOptions(ResolveOptionsEvent $aEvt) {
+	
+	}
+	
 	protected function resolveHints() {
 		parent::resolveHints();
 
