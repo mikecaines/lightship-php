@@ -9,7 +9,7 @@ abstract class Controller extends \Solarfield\Batten\Controller {
 		$exitCode = 1;
 
 		try {
-			if (($controller = static::boot())) {
+			if (($controller = static::boot(static::processInitialRoute()))) {
 				try {
 					$controller->connect();
 					$controller->run();
@@ -26,6 +26,10 @@ abstract class Controller extends \Solarfield\Batten\Controller {
 		}
 
 		return $exitCode;
+	}
+	
+	static public function processInitialRoute() {
+		return null;
 	}
 
 	private function resolvePluginDependencies_step($plugin) {
