@@ -3,6 +3,7 @@ namespace Solarfield\Lightship;
 
 use App\Environment as Env;
 use Exception;
+use Solarfield\Lightship\Events\CreateDocumentEvent;
 use Solarfield\Lightship\Events\CreateHtmlEvent;
 use Solarfield\Lightship\Events\ResolveHintsEvent;
 use Solarfield\Lightship\Events\ResolveScriptIncludesEvent;
@@ -44,6 +45,10 @@ abstract class HtmlView extends View {
 	protected function onResolveHints(ResolveHintsEvent $aEvt) {
 		parent::onResolveHints($aEvt);
 		
+	}
+	
+	protected function onCreateDocument(CreateDocumentEvent $aEvt) {
+	
 	}
 
 	protected function onCreateScriptElements(CreateHtmlEvent $aEvt) {
@@ -107,13 +112,37 @@ abstract class HtmlView extends View {
 
 		$aEvt->getHtml()->append(ob_get_clean());
 	}
-
+	
+	/**
+	 * Creates the top level document HTML, including the DOCTYPE.
+	 * Note a CreateDocumentEvent is dispatched, but does not currently allow much customization of behaviour other
+	 * than setting attributes on the <html> element.
+	 * @return string
+	 * @see onCreateDocument()
+	 */
 	public function createDocument() {
 		ob_start();
 
+		//dispatch a CreateDocumentEvent
+		//This implements CreateElementContentEvent, and corresponds to the <html> event.
+		$event = new CreateDocumentEvent('create-document-event', ['target'=>$this]);
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onCreateDocument'],
+		]);
+		$this->dispatchEvent($event);
+		$htmlAttrs = [];
+		foreach ($event->getAttributeNames() as $name) {
+			$attr = $this->enc($name);
+			if (($value = $event->getAttribute($name)) !== null) {
+				$attr .= '="' . $this->enc($value) . '"';
+			}
+			$htmlAttrs[] = $attr;
+		}
+		$htmlAttrs = $htmlAttrs ? ' ' . implode(' ', $htmlAttrs) : '';
+		
 		?><!DOCTYPE html>
 
-		<html>
+		<html<?php echo($htmlAttrs) ?>>
 			<head><?php echo($this->createHeadContent()); ?></head>
 
 			<body>
