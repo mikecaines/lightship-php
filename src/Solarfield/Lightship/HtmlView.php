@@ -207,8 +207,6 @@ abstract class HtmlView extends View {
 	/**
 	 * Creates <script> elements from the resolved script includes.
 	 * The elements will be output between init/early and bootstrap/late.
-	 * If a client side include specifies loadMethod=dynamic, a data-src attribute will be used,
-	 * and the script will be handled by System.import later.
 	 * @return string
 	 */
 	public function createScriptElements() {
