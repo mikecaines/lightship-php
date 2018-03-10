@@ -3,7 +3,7 @@ namespace Solarfield\Lightship;
 
 use Solarfield\Lightship\Events\CreateJsonDataEvent;
 use Solarfield\Lightship\Events\ResolveJsonDataRulesEvent;
-use Solarfield\Batten\Flags;
+use Solarfield\Lightship\Flags;
 
 use Solarfield\Ok\JsonUtils;
 use Solarfield\Ok\StructUtils;

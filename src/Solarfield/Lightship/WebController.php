@@ -3,18 +3,12 @@ namespace Solarfield\Lightship;
 
 use App\Environment as Env;
 use Exception;
-use Solarfield\Batten\UnresolvedRouteException;
 use Solarfield\Lightship\Events\DoTaskEvent;
 use Solarfield\Lightship\Events\ProcessRouteEvent;
 use Solarfield\Lightship\Events\ResolveOptionsEvent;
-use Solarfield\Batten\StandardOutputEvent;
 use Solarfield\Ok\Url;
 use Throwable;
 
-/**
- * Class WebController
- * @method \Solarfield\Batten\Model getModel
- */
 abstract class WebController extends Controller {
 	static public function boot($aInfo = []) {
 		header('X-Request-Guid: ' . Env::getVars()->get('requestId'));

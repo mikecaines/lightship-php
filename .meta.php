@@ -8,5 +8,5 @@ namespace App {
 	if (true) die();
 
 	define('App\DEBUG', false);
-	abstract class Environment extends \Solarfield\Batten\Environment {}
+	abstract class Environment extends \Solarfield\Lightship\Environment {}
 }

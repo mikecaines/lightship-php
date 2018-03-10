@@ -4,7 +4,7 @@ namespace Solarfield\Lightship;
 use Solarfield\Ok\StringUtils;
 use Solarfield\Ok\StructUtils;
 
-class WebInput implements \Solarfield\Batten\InputInterface {
+class WebInput implements InputInterface {
 	private $data = [];
 
 	private function normalize($aArray) {
