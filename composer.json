@@ -16,6 +16,12 @@
 	],
 
 	"require": {
-		"solarfield/ok-kit-php": "^0.0"
+		"solarfield/ok-kit-php": "^0.0",
+		"psr/log": "^1"
+	},
+
+	"suggest": {
+		"monolog/monolog": "Flexible logging system.",
+		"solarfield/monolog-utils": "Additional monolog utilities for setting up logging chains."
 	}
 }

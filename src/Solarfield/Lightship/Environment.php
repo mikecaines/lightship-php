@@ -3,6 +3,7 @@ namespace Solarfield\Lightship;
 
 use ErrorException;
 use Exception;
+use Psr\Log\LoggerInterface;
 use Solarfield\Ok\MiscUtils;
 
 abstract class Environment {
@@ -10,6 +11,15 @@ abstract class Environment {
 	static private $standardOutput;
 	static private $vars;
 	static private $config;
+	
+	/**
+	 * Creates the logger returned by getLogger().
+	 * Override this to inject a custom logger.
+	 * @return LoggerInterface
+	 */
+	static protected function createLogger(): LoggerInterface {
+		return new Logger();
+	}
 	
 	/**
 	 * @return Config
@@ -34,14 +44,8 @@ abstract class Environment {
 		];
 	}
 	
-	/**
-	 * @return Logger
-	 */
-	static public function getLogger() {
-		if (!self::$logger) {
-			self::$logger = new Logger();
-		}
-		
+	static public function getLogger(): LoggerInterface {
+		if (!self::$logger) self::$logger = static::createLogger();
 		return self::$logger;
 	}
 	
