@@ -1,5 +1,5 @@
 <?php
-namespace Solarfield\Lightship;
+namespace Solarfield\Lightship\Errors;
 
 class UserFriendlyException extends \Exception implements UserFriendlyExceptionInterface {
 	public function getUserFriendlyMessage() {

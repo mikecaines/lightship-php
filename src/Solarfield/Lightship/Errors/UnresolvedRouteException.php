@@ -1,5 +1,5 @@
 <?php
-namespace Solarfield\Lightship;
+namespace Solarfield\Lightship\Errors;
 
 use Exception;
 

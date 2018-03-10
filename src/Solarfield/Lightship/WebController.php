@@ -3,6 +3,9 @@ namespace Solarfield\Lightship;
 
 use App\Environment as Env;
 use Exception;
+use Solarfield\Lightship\Errors\HttpException;
+use Solarfield\Lightship\Errors\UnresolvedRouteException;
+use Solarfield\Lightship\Errors\UserFriendlyException;
 use Solarfield\Lightship\Events\DoTaskEvent;
 use Solarfield\Lightship\Events\ProcessRouteEvent;
 use Solarfield\Lightship\Events\ResolveOptionsEvent;

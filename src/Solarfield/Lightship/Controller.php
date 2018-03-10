@@ -3,6 +3,7 @@ namespace Solarfield\Lightship;
 
 use App\Environment as Env;
 use Exception;
+use Solarfield\Lightship\Errors\UnresolvedRouteException;
 use Solarfield\Ok\EventTargetTrait;
 use Solarfield\Ok\MiscUtils;
 use Solarfield\Ok\StructUtils;
