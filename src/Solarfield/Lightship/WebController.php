@@ -236,10 +236,12 @@ abstract class WebController extends Controller {
 	public function handleStandardOutput(StandardOutputEvent $aEvt) {
 		$this->getModel()->push('app.standardOutput.messages', [
 			'message' => $aEvt->getText(),
+			'level' => $aEvt->getLevel(),
+			'context' => $aEvt->getContext(),
 		]);
 
 		if (\App\DEBUG) {
-			Env::getLogger()->debug('[STDOUT] ' . $aEvt->getText());
+			Env::getLogger()->log($aEvt->getLevel(), '[STDOUT] ' . $aEvt->getText(), $aEvt->getContext());
 		}
 	}
 

@@ -68,7 +68,7 @@ abstract class TerminalController extends Controller {
 		//If it is, the --module argument was probably mistyped.
 		$thisClass = get_class($this);
 		if ($thisClass == 'App\Controller') {
-			$stdout->write("Warning: Script controller resolved to app-level '$thisClass'.");
+			$stdout->warning("Warning: Script controller resolved to app-level '$thisClass'.");
 		}
 
 		if ($verbose) {
@@ -92,7 +92,7 @@ abstract class TerminalController extends Controller {
 			'exception' => $aEx,
 		]);
 
-		Env::getStandardOutput()->write('FATAL ERROR: ' . $aEx->getMessage());
+		Env::getStandardOutput()->error('FATAL ERROR: ' . $aEx->getMessage());
 	}
 
 	public function __construct($aCode) {
