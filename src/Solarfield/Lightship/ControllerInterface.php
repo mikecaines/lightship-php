@@ -1,7 +1,9 @@
 <?php
 namespace Solarfield\Lightship;
 
-interface ControllerInterface {
+use Solarfield\Ok\EventTargetInterface;
+
+interface ControllerInterface extends EventTargetInterface {
 	/**
 	 * @param string $aCode
 	 * @param array $aOptions
@@ -122,8 +124,6 @@ interface ControllerInterface {
 	 * @return Options
 	 */
 	public function getOptions();
-
-	public function addEventListener($aEventType, $aListener);
 
 	public function init();
 }

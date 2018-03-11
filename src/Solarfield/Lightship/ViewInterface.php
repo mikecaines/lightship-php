@@ -1,7 +1,9 @@
 <?php
 namespace Solarfield\Lightship;
 
-interface ViewInterface {
+use Solarfield\Ok\EventTargetInterface;
+
+interface ViewInterface extends EventTargetInterface {
 	public function getCode();
 
 	public function setModel(ModelInterface $aModel);
@@ -29,8 +31,6 @@ interface ViewInterface {
 	public function getController();
 
 	public function render();
-
-	public function addEventListener($aEventType, $aListener);
 
 	public function init();
 }
