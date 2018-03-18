@@ -241,7 +241,7 @@ abstract class WebController extends Controller {
 		]);
 
 		if (\App\DEBUG) {
-			Env::getLogger()->log($aEvt->getLevel(), '[STDOUT] ' . $aEvt->getText(), $aEvt->getContext());
+			Env::getLogger()->log($aEvt->getLevel(), '[stdout] ' . $aEvt->getText(), $aEvt->getContext());
 		}
 	}
 
