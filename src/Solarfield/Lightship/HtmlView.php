@@ -58,46 +58,42 @@ abstract class HtmlView extends View {
 		ob_start();
 
 		foreach ($items as $item) {
-			$item = array_replace([
-				'ignore' => false,
-			], $item);
-			
-			if ($item['type'] == 'file') {
-				$item['attributes']['src'] = $item['resolvedUrl'];
-				
-				$attrs = [];
-				foreach ($item['attributes'] as $k => $v) {
-					$attr = $this->enc($k);
-					if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
-					$attrs[] = $attr;
-				}
-				$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
-				
-				if (!$item['ignore']) {
+			if (!$item['ignore']) {
+				if ($item['type'] == 'file') {
+					$item['attributes']['src'] = $item['resolvedUrl'];
+					
+					$attrs = [];
+					foreach ($item['attributes'] as $k => $v) {
+						$attr = $this->enc($k);
+						if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
+						$attrs[] = $attr;
+					}
+					$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
+					
 					?>
 					<script<?php echo($attrs) ?>></script>
 					<?php
 				}
-			}
-			
-			else if ($item['type'] == 'inline') {
-				$attrs = [];
-				foreach ($item['attributes'] as $k => $v) {
-					$attr = $this->enc($k);
-					if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
-					$attrs[] = $attr;
-				}
-				$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
 				
-				?>
-				<script<?php echo($attrs) ?>><?php echo(trim($item['content'])); ?></script>
-				<?php
-			}
-			
-			else {
-				throw new Exception(
-					"Unknown client side include type '{$item['type']}'."
-				);
+				else if ($item['type'] == 'inline') {
+					$attrs = [];
+					foreach ($item['attributes'] as $k => $v) {
+						$attr = $this->enc($k);
+						if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
+						$attrs[] = $attr;
+					}
+					$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
+					
+					?>
+					<script<?php echo($attrs) ?>><?php echo(trim($item['content'])); ?></script>
+					<?php
+				}
+				
+				else {
+					throw new Exception(
+						"Unknown client side include type '{$item['type']}'."
+					);
+				}
 			}
 		}
 
@@ -111,38 +107,47 @@ abstract class HtmlView extends View {
 		ob_start();
 
 		foreach ($items as $item) {
-			if ($item['type'] == 'file') {
-				if (!array_key_exists('rel', $item['attributes'])) $item['attributes']['rel'] = 'stylesheet';
-				
-				if (strtolower($item['attributes']['rel']) == 'stylesheet') {
-					if (!array_key_exists('type', $item['attributes'])) $item['attributes']['type'] = 'text/css';
-					if (!array_key_exists('href', $item['attributes'])) $item['attributes']['href'] = $item['resolvedUrl'];
+			if (!$item['ignore']) {
+				if ($item['type'] == 'file') {
+					if (!array_key_exists('rel', $item['attributes'])) $item['attributes']['rel'] = 'stylesheet';
+					
+					if (strtolower($item['attributes']['rel']) == 'stylesheet') {
+						if (!array_key_exists('type', $item['attributes'])) $item['attributes']['type'] = 'text/css';
+						if (!array_key_exists('href', $item['attributes'])) $item['attributes']['href'] = $item['resolvedUrl'];
+					}
+					
+					$attrs = [];
+					foreach ($item['attributes'] as $k => $v) {
+						$attr = $this->enc($k);
+						if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
+						$attrs[] = $attr;
+					}
+					$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
+					
+					?>
+					<link<?php echo($attrs) ?>/>
+					<?php
+				}
+
+				else if ($item['type'] == 'inline') {
+					$attrs = [];
+					foreach ($item['attributes'] as $k => $v) {
+						$attr = $this->enc($k);
+						if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
+						$attrs[] = $attr;
+					}
+					$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
+					
+					?>
+					<style<?php echo($attrs) ?>><?php echo($item['content']) ?></style>
+					<?php
 				}
 				
-				$attrs = [];
-				foreach ($item['attributes'] as $k => $v) {
-					$attr = $this->enc($k);
-					if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
-					$attrs[] = $attr;
+				else {
+					throw new Exception(
+						"Unknown client side include type '{$item['type']}'."
+					);
 				}
-				$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
-				
-				?>
-				<link<?php echo($attrs) ?>/>
-				<?php
-			}
-			else {
-				$attrs = [];
-				foreach ($item['attributes'] as $k => $v) {
-					$attr = $this->enc($k);
-					if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
-					$attrs[] = $attr;
-				}
-				$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
-				
-				?>
-				<style<?php echo($attrs) ?>><?php echo($item['content']) ?></style>
-				<?php
 			}
 		}
 
