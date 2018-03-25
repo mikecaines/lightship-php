@@ -202,6 +202,12 @@ abstract class Controller implements ControllerInterface {
 		return $finalController;
 	}
 	
+	/**
+	 * Will be called by ::bootstrap() if an uncaught error occurs before a Controller is created.
+	 * Normally this is only called when in an unrecoverable error state.
+	 * @see ::handleException().
+	 * @param Throwable $aEx
+	 */
 	static public function bail(Throwable $aEx) {
 		Env::getLogger()->error("Bailed.", ['exception'=>$aEx]);
 	}
@@ -436,8 +442,15 @@ abstract class Controller implements ControllerInterface {
 		$this->runRender();
 	}
 	
+	/**
+	 * Will be called by ::bootstrap() if an uncaught error occurs after a Controller is created.
+	 * Normally this is only called when ::connect() or ::run() fails.
+	 * You can override this method, and attempt to boot another Controller for recovery purposes, etc.
+	 * @see ::bail().
+	 * @param Throwable $aEx
+	 */
 	public function handleException(Throwable $aEx) {
-		Env::getLogger()->error((string)$aEx, ['exception'=>$aEx]);
+		static::bail($aEx);
 	}
 	
 	public function getDefaultViewType() {
