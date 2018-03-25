@@ -59,23 +59,36 @@ abstract class HtmlView extends View {
 
 		foreach ($items as $item) {
 			$item = array_replace([
-				'defer' => false,
-				'bootstrap' => false,
+				'ignore' => false,
 			], $item);
 			
-			$attrs = [];
-			if ($item['defer']) $attrs[] = "defer";
-			$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
-			
 			if ($item['type'] == 'file') {
-				if (!$item['bootstrap']) {
+				$item['attributes']['src'] = $item['resolvedUrl'];
+				
+				$attrs = [];
+				foreach ($item['attributes'] as $k => $v) {
+					$attr = $this->enc($k);
+					if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
+					$attrs[] = $attr;
+				}
+				$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
+				
+				if (!$item['ignore']) {
 					?>
-					<script<?php echo($attrs) ?> src="<?php $this->out($item['resolvedUrl']); ?>"></script>
+					<script<?php echo($attrs) ?>></script>
 					<?php
 				}
 			}
 			
 			else if ($item['type'] == 'inline') {
+				$attrs = [];
+				foreach ($item['attributes'] as $k => $v) {
+					$attr = $this->enc($k);
+					if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
+					$attrs[] = $attr;
+				}
+				$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
+				
 				?>
 				<script<?php echo($attrs) ?>><?php echo(trim($item['content'])); ?></script>
 				<?php
@@ -99,13 +112,36 @@ abstract class HtmlView extends View {
 
 		foreach ($items as $item) {
 			if ($item['type'] == 'file') {
+				if (!array_key_exists('rel', $item['attributes'])) $item['attributes']['rel'] = 'stylesheet';
+				
+				if (strtolower($item['attributes']['rel']) == 'stylesheet') {
+					if (!array_key_exists('type', $item['attributes'])) $item['attributes']['type'] = 'text/css';
+					if (!array_key_exists('href', $item['attributes'])) $item['attributes']['href'] = $item['resolvedUrl'];
+				}
+				
+				$attrs = [];
+				foreach ($item['attributes'] as $k => $v) {
+					$attr = $this->enc($k);
+					if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
+					$attrs[] = $attr;
+				}
+				$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
+				
 				?>
-				<link rel="stylesheet" type="text/css" href="<?php $this->out($item['resolvedUrl']); ?>"/>
+				<link<?php echo($attrs) ?>/>
 				<?php
 			}
 			else {
+				$attrs = [];
+				foreach ($item['attributes'] as $k => $v) {
+					$attr = $this->enc($k);
+					if ($v !== true) $attr .= '="' . $this->enc($v) . '"';
+					$attrs[] = $attr;
+				}
+				$attrs = $attrs ? ' ' . implode(' ', $attrs) : '';
+				
 				?>
-				<style type="text/css"><?php echo($item['content']) ?></style>
+				<style<?php echo($attrs) ?>><?php echo($item['content']) ?></style>
 				<?php
 			}
 		}
@@ -206,7 +242,6 @@ abstract class HtmlView extends View {
 
 	/**
 	 * Creates <script> elements from the resolved script includes.
-	 * The elements will be output between init/early and bootstrap/late.
 	 * @return string
 	 */
 	public function createScriptElements() {

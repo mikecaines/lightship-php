@@ -14,7 +14,8 @@ class ClientSideIncludes {
 			'onlyIfExists' => false,
 			'base' => null, //null, 'app', 'module'
 			'filePath' => null,
-			'bootstrap' => false,
+			'attributes' => [],
+			'ignore' => false,
 		], $aOptions);
 
 		$groupIndex = str_pad($options['group'], 10, ' ', STR_PAD_LEFT);
@@ -34,6 +35,8 @@ class ClientSideIncludes {
 	public function addInline($aContent, $aOptions = []) {
 		$options = array_replace([
 			'group' => 2000000,
+			'attributes' => [],
+			'ignore' => false,
 		], $aOptions);
 		
 		$groupIndex = str_pad($options['group'], 10, ' ', STR_PAD_LEFT);
