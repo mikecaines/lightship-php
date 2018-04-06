@@ -271,14 +271,8 @@ abstract class Controller implements ControllerInterface {
 		
 		$input = $this->createInput();
 		$input->importFromGlobals();
-		if ($aInfo && array_key_exists('input', $aInfo)) {
-			$input->merge($aInfo['input']);
-		}
 		
 		$hints = $this->createHints();
-		if ($aInfo && array_key_exists('hints', $aInfo)) {
-			$hints->merge($aInfo['hints']);
-		}
 		
 		//the temporary boot info passed along through the boot loop
 		//The only data/keys kept are moduleCode, nextRoute, controllerOptions
@@ -292,7 +286,12 @@ abstract class Controller implements ControllerInterface {
 					'moduleCode' => array_key_exists('moduleCode', $tempInfo) ? $tempInfo['moduleCode'] : '',
 					'nextRoute' => array_key_exists('nextRoute', $tempInfo) ? $tempInfo['nextRoute'] : null,
 					'controllerOptions' => array_key_exists('controllerOptions', $tempInfo) ? $tempInfo['controllerOptions'] : [],
+					'hints' => array_key_exists('hints', $tempInfo) ? $tempInfo['hints'] : [],
+					'input' => array_key_exists('input', $tempInfo) ? $tempInfo['input'] : [],
 				];
+				
+				$input->merge($tempInfo['input']);
+				$hints->merge($tempInfo['hints']);
 				
 				//create a unique key representing this iteration of the loop.
 				//This is used to detect infinite loops, due to a later iteration routing back to an earlier iteration
