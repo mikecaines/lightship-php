@@ -87,6 +87,14 @@ abstract class WebController extends Controller {
 
 	public function processRoute($aInfo) {
 		$info = parent::processRoute($aInfo);
+		
+		$info = array_replace([
+			'moduleCode' => '',
+			'nextRoute' => null,
+			'controllerOptions' => [],
+			'hints' => [],
+			'input' => [],
+		], $info);
 
 		$event = new ProcessRouteEvent('process-route', ['target' => $this]);
 		$event->setRoute($info);
