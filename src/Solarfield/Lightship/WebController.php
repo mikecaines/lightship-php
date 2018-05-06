@@ -259,8 +259,8 @@ abstract class WebController extends Controller {
 		Env::getStandardOutput()->addEventListener('standard-output', [$this, 'handleStandardOutput']);
 	}
 
-	public function __construct($aCode) {
-		parent::__construct($aCode);
+	public function __construct($aCode, $aOptions = []) {
+		parent::__construct($aCode, $aOptions);
 
 		$this->setDefaultViewType('Html');
 	}

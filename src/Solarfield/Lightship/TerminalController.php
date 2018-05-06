@@ -95,8 +95,8 @@ abstract class TerminalController extends Controller {
 		Env::getStandardOutput()->error('FATAL ERROR: ' . $aEx->getMessage());
 	}
 
-	public function __construct($aCode) {
-		parent::__construct($aCode);
+	public function __construct($aCode, $aOptions = []) {
+		parent::__construct($aCode, $aOptions);
 
 		$this->setDefaultViewType('Stdout');
 	}

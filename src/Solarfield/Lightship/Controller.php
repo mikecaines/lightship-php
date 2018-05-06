@@ -599,7 +599,7 @@ abstract class Controller implements ControllerInterface {
 		$this->resolveOptions();
 	}
 	
-	public function __construct($aCode) {
+	public function __construct($aCode, $aOptions = []) {
 		if (\App\DEBUG && Env::getVars()->get('debugComponentLifetimes')) {
 			Env::getLogger()->debug(get_class($this) . "[code=" . $aCode . "] was constructed");
 		}
