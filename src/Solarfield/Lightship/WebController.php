@@ -213,7 +213,7 @@ abstract class WebController extends Controller {
 			}
 
 			//log the error
-			Env::getLogger()->error((string)$finalEx, [
+			$this->getLogger()->error((string)$finalEx, [
 				'requestId' => Env::getVars()->get('requestId'),
 				'exception' => $finalEx
 			]);
@@ -249,7 +249,7 @@ abstract class WebController extends Controller {
 		]);
 
 		if (\App\DEBUG) {
-			Env::getLogger()->log($aEvt->getLevel(), '[stdout] ' . $aEvt->getText(), $aEvt->getContext());
+			$this->getLogger()->log($aEvt->getLevel(), '[stdout] ' . $aEvt->getText(), $aEvt->getContext());
 		}
 	}
 

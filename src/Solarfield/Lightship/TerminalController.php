@@ -87,7 +87,7 @@ abstract class TerminalController extends Controller {
 	}
 
 	public function handleException(Throwable $aEx) {
-		Env::getLogger()->error((string)$aEx, [
+		$this->getLogger()->error((string)$aEx, [
 			'requestId' => Env::getVars()->get('requestId'),
 			'exception' => $aEx,
 		]);

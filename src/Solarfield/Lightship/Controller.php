@@ -221,6 +221,7 @@ abstract class Controller implements ControllerInterface {
 	private $options;
 	private $plugins;
 	private $proxy;
+	private $logger;
 	
 	private function resolvePluginDependencies_step($plugin) {
 		$plugins = $this->getPlugins();
@@ -350,7 +351,7 @@ abstract class Controller implements ControllerInterface {
 							$newInfo = $tempController->processRoute($tempInfo);
 							
 							if (\App\DEBUG && Env::getVars()->get('debugRouting')) {
-								Env::getLogger()->debug(get_class($tempController) . ' routed from -> to: ' . MiscUtils::varInfo($tempInfo) . ' -> ' . MiscUtils::varInfo($newInfo));
+								$this->getLogger()->debug(get_class($tempController) . ' routed from -> to: ' . MiscUtils::varInfo($tempInfo) . ' -> ' . MiscUtils::varInfo($newInfo));
 							}
 							
 							$tempInfo = $newInfo;
@@ -591,6 +592,14 @@ abstract class Controller implements ControllerInterface {
 		return $this->plugins;
 	}
 	
+	public function getLogger() {
+		if (!$this->logger) {
+			$this->logger = Env::getLogger()->cloneWithName('controller[' . $this->getCode() . ']');
+		}
+		
+		return $this->logger;
+	}
+	
 	public function init() {
 		//this method provides a hook to resolve plugins, options, etc.
 		
@@ -600,16 +609,16 @@ abstract class Controller implements ControllerInterface {
 	}
 	
 	public function __construct($aCode, $aOptions = []) {
-		if (\App\DEBUG && Env::getVars()->get('debugComponentLifetimes')) {
-			Env::getLogger()->debug(get_class($this) . "[code=" . $aCode . "] was constructed");
-		}
-		
 		$this->code = (string)$aCode;
+		
+		if (\App\DEBUG && Env::getVars()->get('debugComponentLifetimes')) {
+			$this->getLogger()->debug(get_class($this) . "[code=" . $aCode . "] was constructed");
+		}
 	}
 	
 	public function __destruct() {
 		if (\App\DEBUG && Env::getVars()->get('debugComponentLifetimes')) {
-			Env::getLogger()->debug(get_class($this) . "[code=" . $this->getCode() . "] was destructed");
+			$this->getLogger()->debug(get_class($this) . "[code=" . $this->getCode() . "] was destructed");
 		}
 	}
 }
