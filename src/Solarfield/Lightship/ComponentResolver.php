@@ -2,9 +2,11 @@
 namespace Solarfield\Lightship;
 
 use App\Environment as Env;
-use Solarfield\Ok\MiscUtils;
+use Solarfield\Ok\LoggerInterface;
 
 class ComponentResolver {
+	private $logger;
+	
 	public function resolveComponent($aChain, $aClassNamePart, $aViewTypeCode = null, $aPluginCode = null) {
 		$chain = array_reverse($aChain);
 		$component = null;
@@ -48,14 +50,36 @@ class ComponentResolver {
 		}
 
 		if (\App\DEBUG && Env::getVars()->get('debugComponentResolution')) {
-			Env::getLogger()->debug(
-				get_called_class() . "::" . __FUNCTION__ . "() resolved '"
-				. $aPluginCode . $aViewTypeCode . $aClassNamePart
-				. "' component " . MiscUtils::varInfo($component)
-				. " from chain " . MiscUtils::varInfo($chain)
+			$this->logger->debug(
+				"Resolved component '" . ($component ? $component['className'] : 'NULL') . "'.",
+				
+				[
+					'classNamePart' => $aClassNamePart,
+					'viewTypeCode' => $aViewTypeCode,
+					'pluginCode' => $aPluginCode,
+					'chain' => $chain,
+					'component' => $component,
+				]
 			);
 		}
 
 		return $component;
+	}
+	
+	public function __construct(array $aOptions = null) {
+		$options = array_replace([
+			'logger' => null,
+		], $aOptions ?: []);
+		
+		if ($options['logger']) {
+			if (!$options['logger'] instanceof LoggerInterface) throw new \Exception(
+				"Option 'logger' must be an instance of \Solarfield\Ok\LoggerInterface."
+			);
+			
+			$this->logger = $options['logger'];
+		}
+		else {
+			$this->logger = Env::getLogger();
+		}
 	}
 }
