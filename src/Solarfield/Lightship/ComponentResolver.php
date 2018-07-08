@@ -19,10 +19,10 @@ class ComponentResolver {
 			], $link);
 
 			$classNamespace = $link['namespace'];
-			$className = $this->generateClassName($link, $aClassNamePart, $aViewTypeCode, $aPluginCode);
+			$className = ($aViewTypeCode ?: '') . $aClassNamePart;
 			$classFileName = $className . '.php';
-
 			$includePath = $link['path'];
+			
 			if ($aPluginCode) {
 				$pluginNamespace = $aPluginCode;
 				$pluginDir = $pluginNamespace;
@@ -33,8 +33,8 @@ class ComponentResolver {
 				$includePath .= $link['pluginsSubPath'];
 				$includePath .= '/' . $pluginDir;
 			}
+			
 			$includePath .= '/' . $classFileName;
-
 			$realIncludePath = realpath($includePath);
 
 			if ($realIncludePath !== false) {
@@ -57,15 +57,5 @@ class ComponentResolver {
 		}
 
 		return $component;
-	}
-
-	public function generateClassName($aLink, $aClassNamePart, $aViewTypeCode = null, $aPluginCode = null) {
-		$className = '';
-
-		if ($aViewTypeCode != null) $className .= $aViewTypeCode;
-
-		$className .= $aClassNamePart;
-
-		return $className;
 	}
 }
