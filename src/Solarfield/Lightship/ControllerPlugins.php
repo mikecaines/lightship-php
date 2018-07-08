@@ -1,7 +1,6 @@
 <?php
 namespace Solarfield\Lightship;
 
-use App\Environment as Env;
 use Exception;
 
 class ControllerPlugins {
@@ -73,7 +72,7 @@ class ControllerPlugins {
 			foreach ($this->getRegistrations() as $registration) {
 				if (($item = $this->get($registration['componentCode'])) && $item instanceof $aClass) {
 					if ($plugin) {
-						Env::getLogger()->warning("Could not retrieve plugin because multiple instances of " . $aClass . " are registered.");
+						$this->controller->getLogger()->warning("Could not retrieve plugin because multiple instances of " . $aClass . " are registered.");
 						break;
 					}
 
