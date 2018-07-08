@@ -3,7 +3,8 @@ namespace Solarfield\Lightship;
 
 use ErrorException;
 use Exception;
-use Psr\Log\LoggerInterface;
+use Solarfield\Ok\LoggerInterface;
+use Solarfield\Ok\Logger;
 use Solarfield\Ok\MiscUtils;
 
 abstract class Environment {
