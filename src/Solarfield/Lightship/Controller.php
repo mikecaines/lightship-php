@@ -102,7 +102,7 @@ abstract class Controller implements ControllerInterface {
 	}
 	
 	static public function boot($aInfo = null) {
-		if (\App\DEBUG && Env::getVars()->get('debugMemUsage')) {
+		if (Env::getVars()->get('debugMemUsage')) {
 			$bytesUsed = memory_get_usage();
 			$bytesLimit = ini_get('memory_limit');
 			
@@ -173,7 +173,7 @@ abstract class Controller implements ControllerInterface {
 			$stubController->handleException($finalError);
 		}
 		
-		if (\App\DEBUG && Env::getVars()->get('debugMemUsage')) {
+		if (Env::getVars()->get('debugMemUsage')) {
 			$bytesUsed = memory_get_usage();
 			$bytesPeak = memory_get_peak_usage();
 			$bytesLimit = ini_get('memory_limit');

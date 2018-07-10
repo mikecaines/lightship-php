@@ -87,8 +87,6 @@ abstract class Environment {
 			"PHP version 7 or higher is required."
 		);
 		
-		$vars = static::getVars();
-		
 		static::getVars()->add('requestId', MiscUtils::guid());
 		
 		//validate app package file path
@@ -101,7 +99,7 @@ abstract class Environment {
 				"Invalid appPackageFilePath: '" . $options['appPackageFilePath'] . "'."
 			);
 		}
-		$vars->add('appPackageFilePath', $path);
+		static::getVars()->add('appPackageFilePath', $path);
 		
 		//set the project package file path
 		//This is the top level directory that contains composer's vendor dir, www, etc.
@@ -124,24 +122,20 @@ abstract class Environment {
 		
 		//include the config
 		require_once __DIR__ . '/Config.php';
-		$path = $vars->get('appPackageFilePath') . '/config.php';
+		$path = static::getVars()->get('appPackageFilePath') . '/config.php';
 		/** @noinspection PhpIncludeInspection */
 		self::$config = new Config(file_exists($path) ? MiscUtils::extractInclude($path) : []);
 		
-		//define low level debug flag
+		//define the low level "unsafe debug mode enabled" flag
 		if (!defined('App\DEBUG')) define('App\DEBUG', false);
 		
-		
-		if (\App\DEBUG) {
-			$config = static::getConfig();
-			
-			$vars->add('debugComponentResolution', (bool)$config->get('debugComponentResolution'));
-			$vars->add('debugComponentLifetimes', (bool)$config->get('debugComponentLifetimes'));
-			$vars->add('debugMemUsage', (bool)$config->get('debugMemUsage'));
-			$vars->add('debugPaths', (bool)$config->get('debugPaths'));
-			$vars->add('debugRouting', (bool)$config->get('debugRouting'));
-			$vars->add('debugReflection', (bool)$config->get('debugReflection'));
-			$vars->add('debugClassAutoload', (bool)$config->get('debugClassAutoload'));
-		}
+		//define some debug behaviour flags
+		static::getVars()->add('debugComponentResolution', (bool)static::getConfig()->get('debugComponentResolution'));
+		static::getVars()->add('debugComponentLifetimes', (bool)static::getConfig()->get('debugComponentLifetimes'));
+		static::getVars()->add('debugMemUsage', (bool)static::getConfig()->get('debugMemUsage'));
+		static::getVars()->add('debugPaths', (bool)static::getConfig()->get('debugPaths'));
+		static::getVars()->add('debugRouting', (bool)static::getConfig()->get('debugRouting'));
+		static::getVars()->add('debugReflection', (bool)static::getConfig()->get('debugReflection'));
+		static::getVars()->add('debugClassAutoload', (bool)static::getConfig()->get('debugClassAutoload'));
 	}
 }
