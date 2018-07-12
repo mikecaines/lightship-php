@@ -3,6 +3,7 @@ namespace Solarfield\Lightship;
 
 use ErrorException;
 use Exception;
+use Psr\Log\LogLevel;
 use Solarfield\Ok\LoggerInterface;
 use Solarfield\Ok\Logger;
 use Solarfield\Ok\MiscUtils;
@@ -129,13 +130,35 @@ abstract class Environment {
 		//define the low level "unsafe debug mode enabled" flag
 		if (!defined('App\DEBUG')) define('App\DEBUG', false);
 		
-		//define some debug behaviour flags
-		static::getVars()->add('debugComponentResolution', (bool)static::getConfig()->get('debugComponentResolution'));
-		static::getVars()->add('debugComponentLifetimes', (bool)static::getConfig()->get('debugComponentLifetimes'));
-		static::getVars()->add('debugMemUsage', (bool)static::getConfig()->get('debugMemUsage'));
-		static::getVars()->add('debugPaths', (bool)static::getConfig()->get('debugPaths'));
-		static::getVars()->add('debugRouting', (bool)static::getConfig()->get('debugRouting'));
-		static::getVars()->add('debugReflection', (bool)static::getConfig()->get('debugReflection'));
-		static::getVars()->add('debugClassAutoload', (bool)static::getConfig()->get('debugClassAutoload'));
+		//add an env var for the desired log message verbosity level
+		//This should be set to least as verbose as you intend to capture in your logger.
+		//Log message producers may obey it to avoid generating expensive messages.
+		//Normally defaults to WARNING. If \App\DEBUG is enabled, defaults to DEBUG.
+		//@see \Psr\Log\LogLevel
+		//@see static::createLogger()
+		if (($t = static::getConfig()->get('loggingLevel'))) {
+			if (in_array($t, ['emergency', 'alert', 'critical', 'error', 'warning', 'notice','info', 'debug'])) {
+				$logLevel = $t;
+			}
+			else {
+				$logLevel = LogLevel::WARNING;
+				
+				static::getLogger()->warning("Environment var 'loggingLevel' is invalid.", [
+					'value' => $t,
+				]);
+			}
+		}
+		else {
+			$logLevel = \App\DEBUG ? LogLevel::DEBUG : LogLevel::WARNING;
+		}
+		static::getVars()->set('loggingLevel', $logLevel);
+		
+		//define some env vars to control log message output
+		//These are noisy, so are disabled by default.
+		static::getVars()->add('logComponentResolution', (bool)static::getConfig()->get('logComponentResolution'));
+		static::getVars()->add('logComponentLifetimes', (bool)static::getConfig()->get('logComponentLifetimes'));
+		static::getVars()->add('logMemUsage', (bool)static::getConfig()->get('logMemUsage'));
+		static::getVars()->add('logPaths', (bool)static::getConfig()->get('logPaths'));
+		static::getVars()->add('logRouting', (bool)static::getConfig()->get('logRouting'));
 	}
 }

@@ -142,7 +142,7 @@ abstract class View implements ViewInterface {
 	}
 	
 	public function __construct($aCode) {
-		if (\App\DEBUG && Env::getVars()->get('debugComponentLifetimes')) {
+		if (Env::getVars()->get('logComponentLifetimes')) {
 			Env::getLogger()->debug(get_class($this) . "[code=" . $aCode . "] was constructed");
 		}
 		
@@ -156,7 +156,7 @@ abstract class View implements ViewInterface {
 	}
 	
 	public function __destruct() {
-		if (\App\DEBUG && Env::getVars()->get('debugComponentLifetimes')) {
+		if (Env::getVars()->get('logComponentLifetimes')) {
 			Env::getLogger()->debug(get_class($this) . "[code=" . $this->getCode() . "] was destructed");
 		}
 	}

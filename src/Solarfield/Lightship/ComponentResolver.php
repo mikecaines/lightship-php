@@ -49,7 +49,7 @@ class ComponentResolver {
 			}
 		}
 
-		if (\App\DEBUG && Env::getVars()->get('debugComponentResolution')) {
+		if (Env::getVars()->get('logComponentResolution')) {
 			$this->logger->debug(
 				"Resolved component '" . ($component ? $component['className'] : 'NULL') . "'.",
 				

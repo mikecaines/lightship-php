@@ -102,7 +102,7 @@ abstract class Controller implements ControllerInterface {
 	}
 	
 	static public function boot($aInfo = null) {
-		if (Env::getVars()->get('debugMemUsage')) {
+		if (Env::getVars()->get('logMemUsage')) {
 			$bytesUsed = memory_get_usage();
 			$bytesLimit = ini_get('memory_limit');
 			
@@ -114,7 +114,7 @@ abstract class Controller implements ControllerInterface {
 			unset($bytesUsed, $bytesLimit);
 		}
 		
-		if (\App\DEBUG && Env::getVars()->get('debugPaths')) {
+		if (Env::getVars()->get('logPaths')) {
 			Env::getLogger()->debug('App dependencies file path: '. Env::getVars()->get('appDependenciesFilePath'));
 			Env::getLogger()->debug('App package file path: '. Env::getVars()->get('appPackageFilePath'));
 		}
@@ -173,7 +173,7 @@ abstract class Controller implements ControllerInterface {
 			$stubController->handleException($finalError);
 		}
 		
-		if (Env::getVars()->get('debugMemUsage')) {
+		if (Env::getVars()->get('logMemUsage')) {
 			$bytesUsed = memory_get_usage();
 			$bytesPeak = memory_get_peak_usage();
 			$bytesLimit = ini_get('memory_limit');
@@ -352,7 +352,7 @@ abstract class Controller implements ControllerInterface {
 							//tell the temp controller to process the route
 							$newInfo = $tempController->processRoute($tempInfo);
 							
-							if (\App\DEBUG && Env::getVars()->get('debugRouting')) {
+							if (Env::getVars()->get('logRouting')) {
 								$this->getLogger()->debug(get_class($tempController) . ' routed from -> to: ' . MiscUtils::varInfo($tempInfo) . ' -> ' . MiscUtils::varInfo($newInfo));
 							}
 							
@@ -613,13 +613,13 @@ abstract class Controller implements ControllerInterface {
 	public function __construct($aCode, $aOptions = []) {
 		$this->code = (string)$aCode;
 		
-		if (\App\DEBUG && Env::getVars()->get('debugComponentLifetimes')) {
+		if (Env::getVars()->get('logComponentLifetimes')) {
 			$this->getLogger()->debug(get_class($this) . "[code=" . $aCode . "] was constructed");
 		}
 	}
 	
 	public function __destruct() {
-		if (\App\DEBUG && Env::getVars()->get('debugComponentLifetimes')) {
+		if (Env::getVars()->get('logComponentLifetimes')) {
 			$this->getLogger()->debug(get_class($this) . "[code=" . $this->getCode() . "] was destructed");
 		}
 	}
