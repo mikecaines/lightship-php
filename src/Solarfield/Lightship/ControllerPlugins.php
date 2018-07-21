@@ -48,6 +48,7 @@ class ControllerPlugins {
 	}
 
 	/**
+	 * Gets the plugin with the specified component code, or null if it is not found.
 	 * @param string $aComponentCode
 	 * @return ControllerPlugin|null
 	 * @throws Exception
@@ -59,7 +60,13 @@ class ControllerPlugins {
 
 		return null;
 	}
-
+	
+	/**
+	 * Gets the plugin implementing the specified interface, or null if it is not found.
+	 * @param $aClass
+	 * @return ControllerPlugin|null
+	 * @throws Exception
+	 */
 	public function getByClass($aClass) {
 		$plugin = null;
 
@@ -83,6 +90,22 @@ class ControllerPlugins {
 
 			return $plugin;
 		}
+	}
+	
+	/**
+	 * Gets the plugin implementing the specified interface, or throws if it is not found.
+	 * @param $aClass
+	 * @return ControllerPlugin|null
+	 * @throws Exception
+	 */
+	public function expectByClass($aClass) {
+		$plugin = $this->getByClass($aClass);
+		
+		if (!$plugin) throw new Exception(
+			"Expected plugin of type {$aClass}."
+		);
+		
+		return $plugin;
 	}
 
 	public function getRegistrations() {
