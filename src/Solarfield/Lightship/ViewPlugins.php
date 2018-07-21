@@ -11,40 +11,38 @@ class ViewPlugins {
 
 	public function register($aComponentCode) {
 		if (array_key_exists($aComponentCode, $this->items)) {
-			throw new Exception(
-				"Plugin '$aComponentCode' is already registered."
-			);
+			Env::getLogger()->notice("Duplicate plugin registration.", [
+				'componentCode' => $aComponentCode,
+			]);
 		}
+		
+		$plugin = null;
 
-		else {
-			$plugin = null;
+		$component = $this->view->getController()->getComponentResolver()->resolveComponent(
+			$this->view->getController()->getComponentChain($this->view->getCode()),
+			'ViewPlugin',
+			$this->view->getType(),
+			$aComponentCode
+		);
 
-			$component = $this->view->getController()->getComponentResolver()->resolveComponent(
-				$this->view->getController()->getComponentChain($this->view->getCode()),
-				'ViewPlugin',
-				$this->view->getType(),
-				$aComponentCode
-			);
+		if ($component) {
+			/** @noinspection PhpIncludeInspection */
+			include_once $component['includeFilePath'];
 
-			if ($component) {
-				/** @noinspection PhpIncludeInspection */
-				include_once $component['includeFilePath'];
-
-				if (!class_exists($component['className'])) {
-					throw new Exception(
-						"Class class '" . $component['className'] . "'"
-						. " was not found in file '" . $component['includeFilePath'] . "'."
-					);
-				}
-
-				$plugin = new $component['className']($this->view, $aComponentCode);
+			if (!class_exists($component['className'])) {
+				throw new Exception(
+					"Class class '" . $component['className'] . "'"
+					. " was not found in file '" . $component['includeFilePath'] . "'."
+				);
 			}
 
-			$this->items[$aComponentCode] = [
-				'plugin' => $plugin,
-				'componentCode' => $aComponentCode,
-			];
+			$plugin = new $component['className']($this->view, $aComponentCode);
 		}
+
+		$this->items[$aComponentCode] = [
+			'plugin' => $plugin,
+			'componentCode' => $aComponentCode,
+		];
 
 		return $this->get($aComponentCode);
 	}
