@@ -73,7 +73,7 @@ class ViewPlugins {
 			foreach ($this->getRegistrations() as $registration) {
 				if (($item = $this->get($registration['componentCode'])) && $item instanceof $aClass) {
 					if ($plugin) {
-						Env::getLogger()->warn("Could not retrieve plugin because multiple instances of " . $aClass . " are registered.");
+						Env::getLogger()->warning("Could not retrieve plugin because multiple instances of " . $aClass . " are registered.");
 						break;
 					}
 
