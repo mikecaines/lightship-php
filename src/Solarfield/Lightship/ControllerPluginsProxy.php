@@ -31,13 +31,32 @@ class ControllerPluginsProxy {
 	}
 
 	/**
-	 * Gets the plugin by the plugin class (not the plugin proxy class).
+	 * Gets the proxy for the plugin implementing the specified interface,
+	 * or null if it is not found.
 	 * @param string $aClass
 	 * @return null|ControllerPluginProxy
+	 * @throws \Exception
 	 */
 	public function getByClass($aClass) {
 		$plugin = $this->getActualPlugins()->getByClass($aClass);
 		return $plugin ? $plugin->getProxy() : null;
+	}
+	
+	/**
+	 * Gets the proxy for the plugin implementing the specified interface,
+	 * or throws if it is not found.
+	 * @param $aClass
+	 * @return ControllerPluginProxy
+	 * @throws \Exception
+	 */
+	public function expectByClass($aClass) {
+		$plugin = $this->getActualPlugins()->getByClass($aClass);
+		
+		if (!$plugin) throw new \Exception(
+			"Expected plugin of type {$aClass}."
+		);
+		
+		return $plugin->getProxy();
 	}
 
 	public function getRegistrations() {
