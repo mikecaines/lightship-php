@@ -13,6 +13,7 @@ abstract class Environment {
 	static private $standardOutput;
 	static private $vars;
 	static private $config;
+	static private $chain;
 	
 	/**
 	 * Creates the logger returned by getLogger().
@@ -30,20 +31,27 @@ abstract class Environment {
 		return self::$config;
 	}
 	
-	static public function getBaseChain() {
-		return $chain = [
-			[
-				'id' => 'solarfield/lightship-php',
-				'namespace' => __NAMESPACE__,
-				'path' => __DIR__,
-			],
-			
-			[
-				'id' => 'app',
-				'namespace' => 'App',
-				'path' => static::getVars()->get('appPackageFilePath') . '/App',
-			],
-		];
+	static public function createComponentChain(): ComponentChain {
+		$chain = new ComponentChain();
+		
+		$chain->insertAfter(null, [
+			'id' => 'solarfield/lightship-php',
+			'namespace' => __NAMESPACE__,
+			'path' => __DIR__,
+		]);
+		
+		$chain->insertAfter(null, [
+			'id' => 'app',
+			'namespace' => 'App',
+			'path' => static::getVars()->get('appPackageFilePath') . '/App',
+		]);
+		
+		return $chain;
+	}
+	
+	static public function getComponentChain(): ComponentChain {
+		if (!self::$chain) self::$chain = static::createComponentChain();
+		return self::$chain;
 	}
 	
 	static public function getLogger(): LoggerInterface {

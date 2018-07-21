@@ -69,22 +69,22 @@ class ClientSideIncludes {
 					//if the item is relative to the app or module
 					if ($item['base'] == 'app' || $item['base'] == 'module') {
 						$moduleCode = $this->view->getCode();
-						$chain = $this->view->getController()->getChain($moduleCode);
+						$chain = $this->view->getController()->getComponentChain($moduleCode);
 	
 						if ($item['base'] == 'app') {
-							$link = StructUtils::find($chain, 'id', 'app');
+							$link = $chain->get('app');
 						}
 						else {
-							$link = StructUtils::find($chain, 'id', 'module');
+							$link = $chain->get('module');
 						}
 	
 						if ($link) {
-							$sourceDirUrl = Env::getVars()->get('appSourceWebPath') . '/' . str_replace('\\', '/', $link['namespace']);
+							$sourceDirUrl = Env::getVars()->get('appSourceWebPath') . '/' . str_replace('\\', '/', $link->namespace());
 	
 							//if item specifies an explicit file path (relative to link)
 							if ($item['filePath']) {
 								//if file exists on disk
-								if (($path = realpath($link['path'] . $item['filePath']))) {
+								if (($path = realpath($link->path() . $item['filePath']))) {
 									//if item's url is a url path
 									if (mb_substr($item['url'], 0, 1) == '/') {
 										$resolvedUrl = $sourceDirUrl . $item['url'];
@@ -101,7 +101,7 @@ class ClientSideIncludes {
 							//else item only specifies a url (web path)
 							else {
 								//if file exists on disk
-								if (($path = realpath($link['path'] . $item['url']))) {
+								if (($path = realpath($link->path() . $item['url']))) {
 									$resolvedFileFilePath = $path;
 									$resolvedUrl = $sourceDirUrl . $item['url'];
 								}

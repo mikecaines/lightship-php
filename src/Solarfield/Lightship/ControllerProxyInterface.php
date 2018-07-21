@@ -9,9 +9,9 @@ interface ControllerProxyInterface {
 
 	/**
 	 * @param string $aCode
-	 * @return array
+	 * @return ComponentChain
 	 */
-	public function getChain($aCode);
+	public function getComponentChain($aCode): ComponentChain;
 
 	/**
 	 * @param string $aType

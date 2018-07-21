@@ -20,7 +20,7 @@ class ViewPlugins {
 			$plugin = null;
 
 			$component = $this->view->getController()->getComponentResolver()->resolveComponent(
-				$this->view->getController()->getChain($this->view->getCode()),
+				$this->view->getController()->getComponentChain($this->view->getCode()),
 				'ViewPlugin',
 				$this->view->getType(),
 				$aComponentCode

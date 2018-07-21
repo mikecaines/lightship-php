@@ -7,32 +7,30 @@ use Solarfield\Ok\LoggerInterface;
 class ComponentResolver {
 	private $logger;
 	
-	public function resolveComponent($aChain, $aClassNamePart, $aViewTypeCode = null, $aPluginCode = null) {
-		$chain = array_reverse($aChain);
+	public function resolveComponent(ComponentChain $aChain, $aClassNamePart, $aViewTypeCode = null, $aPluginCode = null) {
+		// reverse the chain
+		/** @var ComponentChainLink[] $chain */ $chain = [];
+		foreach ($aChain as $link) {
+			$chain[] = $link;
+		}
+		$chain = array_reverse($chain);
+		
 		$component = null;
 
 		foreach ($chain as $link) {
-			$link = array_replace([
-				'id' => null,
-				'namespace' => null,
-				'path' => null,
-				'pluginsSubNamespace' => '\\Plugins',
-				'pluginsSubPath' => '/Plugins',
-			], $link);
-
-			$classNamespace = $link['namespace'];
+			$classNamespace = $link->namespace();
 			$className = ($aViewTypeCode ?: '') . $aClassNamePart;
 			$classFileName = $className . '.php';
-			$includePath = $link['path'];
+			$includePath = $link->path();
 			
 			if ($aPluginCode) {
 				$pluginNamespace = $aPluginCode;
 				$pluginDir = $pluginNamespace;
 
-				$classNamespace .= $link['pluginsSubNamespace'];
+				$classNamespace .= $link->pluginsNamespace();
 				$classNamespace .= '\\' . $pluginNamespace;
 
-				$includePath .= $link['pluginsSubPath'];
+				$includePath .= $link->pluginsPath();
 				$includePath .= '/' . $pluginDir;
 			}
 			

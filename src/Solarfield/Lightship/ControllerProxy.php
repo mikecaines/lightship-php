@@ -9,8 +9,8 @@ class ControllerProxy implements ControllerProxyInterface {
 		return $this->controller->getComponentResolver();
 	}
 
-	public function getChain($aCode) {
-		return $this->controller->getChain($aCode);
+	public function getComponentChain($aCode): ComponentChain {
+		return $this->controller->getComponentChain($aCode);
 	}
 
 	public function createHints() {

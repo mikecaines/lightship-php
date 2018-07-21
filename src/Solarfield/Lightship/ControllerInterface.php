@@ -13,9 +13,9 @@ interface ControllerInterface extends EventTargetInterface {
 
 	/**
 	 * @param string $aCode
-	 * @return array
+	 * @return ComponentChain
 	 */
-	static public function getChain($aCode);
+	static public function getComponentChain($aCode): ComponentChain;
 
 	/**
 	 * @return ComponentResolver

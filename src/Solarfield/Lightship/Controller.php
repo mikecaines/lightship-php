@@ -18,7 +18,7 @@ abstract class Controller implements ControllerInterface {
 	
 	static public function fromCode($aCode, $aOptions = array()) {
 		$component = static::getComponentResolver()->resolveComponent(
-			static::getChain($aCode),
+			static::getComponentChain($aCode),
 			'Controller',
 			null,
 			null
@@ -47,18 +47,18 @@ abstract class Controller implements ControllerInterface {
 		return $controller;
 	}
 	
-	static public function getChain($aModuleCode) {
-		$chain = Env::getBaseChain();
+	static public function getComponentChain($aModuleCode): ComponentChain {
+		$chain = clone Env::getComponentChain();
 		
 		if ($aModuleCode != null) {
 			$moduleNamespace = $aModuleCode;
 			$moduleDir = $moduleNamespace;
 			
-			$chain[] = [
+			$chain->insertAfter(null, [
 				'id' => 'module',
 				'namespace' => 'App\\Modules\\' . $moduleNamespace,
 				'path' => Env::getVars()->get('appPackageFilePath') . '/App/Modules/' . $moduleDir,
-			];
+			]);
 		}
 		
 		return $chain;
@@ -501,7 +501,7 @@ abstract class Controller implements ControllerInterface {
 		$code = $this->getCode();
 		
 		$component = static::getComponentResolver()->resolveComponent(
-			static::getChain($code),
+			static::getComponentChain($code),
 			'Model'
 		);
 		
@@ -531,7 +531,7 @@ abstract class Controller implements ControllerInterface {
 		$code = $this->getCode();
 		
 		$component = static::getComponentResolver()->resolveComponent(
-			static::getChain($code),
+			static::getComponentChain($code),
 			'View',
 			$aType
 		);

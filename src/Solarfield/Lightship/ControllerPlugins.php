@@ -19,7 +19,7 @@ class ControllerPlugins {
 			$plugin = null;
 
 			$component = $this->controller->getComponentResolver()->resolveComponent(
-				$this->controller->getChain($this->controller->getCode()),
+				$this->controller->getComponentChain($this->controller->getCode()),
 				'ControllerPlugin',
 				null,
 				$aComponentCode
