@@ -71,7 +71,7 @@ abstract class Controller implements ControllerInterface {
 	static public function getComponentResolver() {
 		if (!self::$componentResolver) {
 			self::$componentResolver = new ComponentResolver([
-				'logger' => Env::getLogger()->cloneWithName('controller'),
+				'logger' => Env::getLogger()->withName('controller'),
 			]);
 		}
 		
@@ -596,7 +596,7 @@ abstract class Controller implements ControllerInterface {
 	
 	public function getLogger() {
 		if (!$this->logger) {
-			$this->logger = Env::getLogger()->cloneWithName('controller[' . $this->getCode() . ']');
+			$this->logger = Env::getLogger()->withName('controller[' . $this->getCode() . ']');
 		}
 		
 		return $this->logger;
