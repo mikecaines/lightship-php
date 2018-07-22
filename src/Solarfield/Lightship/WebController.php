@@ -213,7 +213,7 @@ abstract class WebController extends Controller {
 			}
 
 			//log the error
-			$this->getLogger()->error((string)$finalEx, [
+			$this->getLogger()->error($finalEx->getMessage(), [
 				'exception' => $finalEx
 			]);
 		}

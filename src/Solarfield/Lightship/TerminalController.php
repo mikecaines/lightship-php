@@ -87,7 +87,7 @@ abstract class TerminalController extends Controller {
 	}
 
 	public function handleException(Throwable $aEx) {
-		$this->getLogger()->error((string)$aEx, [
+		$this->getLogger()->error($aEx->getMessage(), [
 			'exception' => $aEx,
 		]);
 
