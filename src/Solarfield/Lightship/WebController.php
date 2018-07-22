@@ -214,7 +214,6 @@ abstract class WebController extends Controller {
 
 			//log the error
 			$this->getLogger()->error((string)$finalEx, [
-				'requestId' => Env::getVars()->get('requestId'),
 				'exception' => $finalEx
 			]);
 		}
