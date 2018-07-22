@@ -8,8 +8,15 @@ namespace PHPSTORM_META {
 		\Solarfield\Lightship\ControllerPlugins::getByClass('') => [
 			"" == "@",
 		],
+		\Solarfield\Lightship\ControllerPlugins::expectByClass('') => [
+			"" == "@",
+		],
 
 		\Solarfield\Lightship\ViewPlugins::getByClass('') => [
+			"" == "@",
+		],
+
+		\Solarfield\Lightship\ViewPlugins::expectByClass('') => [
 			"" == "@",
 		],
 	];
