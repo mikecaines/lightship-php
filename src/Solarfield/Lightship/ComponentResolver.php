@@ -1,11 +1,11 @@
 <?php
 namespace Solarfield\Lightship;
 
-use App\Environment as Env;
 use Solarfield\Ok\LoggerInterface;
 
 class ComponentResolver {
-	private $logger;
+	/** @var LoggerInterface */ private $logger;
+	/** @var EnvironmentInterface */ private $environment;
 	
 	public function resolveComponent(ComponentChain $aChain, $aClassNamePart, $aViewTypeCode = null, $aPluginCode = null) {
 		// reverse the chain
@@ -47,7 +47,7 @@ class ComponentResolver {
 			}
 		}
 
-		if (Env::getVars()->get('logComponentResolution')) {
+		if ($this->environment->getVars()->get('logComponentResolution')) {
 			$this->logger->debug(
 				"Resolved component '" . ($component ? $component['className'] : 'NULL') . "'.",
 				
@@ -64,7 +64,9 @@ class ComponentResolver {
 		return $component;
 	}
 	
-	public function __construct(array $aOptions = null) {
+	public function __construct(EnvironmentInterface $aEnvironment, array $aOptions = null) {
+		$this->environment = $aEnvironment;
+		
 		$options = array_replace([
 			'logger' => null,
 		], $aOptions ?: []);
@@ -77,7 +79,7 @@ class ComponentResolver {
 			$this->logger = $options['logger'];
 		}
 		else {
-			$this->logger = Env::getLogger();
+			$this->logger = $this->environment->getLogger();
 		}
 	}
 }

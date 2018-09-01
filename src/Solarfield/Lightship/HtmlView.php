@@ -1,7 +1,6 @@
 <?php
 namespace Solarfield\Lightship;
 
-use App\Environment as Env;
 use Exception;
 use Solarfield\Lightship\Events\CreateDocumentEvent;
 use Solarfield\Lightship\Events\CreateHtmlEvent;
@@ -214,7 +213,7 @@ abstract class HtmlView extends View {
 	}
 
 	public function createTitle() {
-		return Env::getVars()->get('requestId');
+		return $this->getEnvironment()->getVars()->get('requestId');
 	}
 
 	public function getStyleIncludes() {
@@ -282,8 +281,8 @@ abstract class HtmlView extends View {
 		echo($markup);
 	}
 
-	public function __construct($aCode) {
+	public function __construct(EnvironmentInterface $aEnvironment, string $aCode, $aOptions = []) {
 		$this->type = 'Html';
-		parent::__construct($aCode);
+		parent::__construct($aEnvironment, $aCode, $aOptions);
 	}
 }

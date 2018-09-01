@@ -1,7 +1,6 @@
 <?php
 namespace Solarfield\Lightship;
 
-use App\Environment as Env;
 use Exception;
 
 class ViewPlugins {
@@ -11,7 +10,7 @@ class ViewPlugins {
 
 	public function register($aComponentCode) {
 		if (array_key_exists($aComponentCode, $this->items)) {
-			Env::getLogger()->notice("Duplicate plugin registration.", [
+			$this->view->getEnvironment()->getLogger()->notice("Duplicate plugin registration.", [
 				'componentCode' => $aComponentCode,
 			]);
 		}
@@ -19,7 +18,7 @@ class ViewPlugins {
 		$plugin = null;
 
 		$component = $this->view->getController()->getComponentResolver()->resolveComponent(
-			$this->view->getController()->getComponentChain($this->view->getCode()),
+			$this->view->getEnvironment()->getComponentChain($this->view->getCode()),
 			'ViewPlugin',
 			$this->view->getType(),
 			$aComponentCode
@@ -78,7 +77,7 @@ class ViewPlugins {
 			foreach ($this->getRegistrations() as $registration) {
 				if (($item = $this->get($registration['componentCode'])) && $item instanceof $aClass) {
 					if ($plugin) {
-						Env::getLogger()->warning("Could not retrieve plugin because multiple instances of " . $aClass . " are registered.");
+						$this->view->getEnvironment()->getLogger()->warning("Could not retrieve plugin because multiple instances of " . $aClass . " are registered.");
 						break;
 					}
 

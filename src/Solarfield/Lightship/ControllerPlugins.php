@@ -1,7 +1,6 @@
 <?php
 namespace Solarfield\Lightship;
 
-use App\Environment as Env;
 use Exception;
 
 class ControllerPlugins {
@@ -11,7 +10,7 @@ class ControllerPlugins {
 
 	public function register($aComponentCode) {
 		if (array_key_exists($aComponentCode, $this->items)) {
-			Env::getLogger()->notice("Duplicate plugin registration.", [
+			$this->controller->getEnvironment()->getLogger()->notice("Duplicate plugin registration.", [
 				'componentCode' => $aComponentCode,
 			]);
 		}
@@ -19,7 +18,7 @@ class ControllerPlugins {
 		$plugin = null;
 
 		$component = $this->controller->getComponentResolver()->resolveComponent(
-			$this->controller->getComponentChain($this->controller->getCode()),
+			$this->controller->getEnvironment()->getComponentChain($this->controller->getCode()),
 			'ControllerPlugin',
 			null,
 			$aComponentCode

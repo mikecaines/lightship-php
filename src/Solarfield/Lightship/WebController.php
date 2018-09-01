@@ -1,7 +1,6 @@
 <?php
 namespace Solarfield\Lightship;
 
-use App\Environment as Env;
 use Exception;
 use Solarfield\Lightship\Errors\HttpException;
 use Solarfield\Lightship\Errors\UnresolvedRouteException;
@@ -9,52 +8,26 @@ use Solarfield\Lightship\Errors\UserFriendlyException;
 use Solarfield\Lightship\Events\DoTaskEvent;
 use Solarfield\Lightship\Events\ProcessRouteEvent;
 use Solarfield\Lightship\Events\ResolveOptionsEvent;
-use Solarfield\Ok\Url;
 use Throwable;
 
+/**
+ * Class WebController
+ * @package Solarfield\Lightship
+ *
+ * @method WebContext getContext() : ContextInterface
+ */
 abstract class WebController extends Controller {
-	static public function boot($aInfo = []) {
-		header('X-Request-Guid: ' . Env::getVars()->get('requestId'));
+	static public function boot(EnvironmentInterface $aEnvironment, ContextInterface $aContext) {
+		header('X-Request-Guid: ' . $aEnvironment->getVars()->get('requestId'));
 
-		return parent::boot($aInfo);
-	}
-
-	static public function getInitialRoute() {
-		//prefer REDIRECT_URL over REQUEST_URI,
-		//so that only the end result of internal apache redirects (e.g. the N flag) are used
-
-		if (array_key_exists('REDIRECT_URL', $_SERVER)) {
-			$url = $_SERVER['REDIRECT_URL'];
-
-			if (array_key_exists('REDIRECT_QUERY_STRING', $_SERVER) && $_SERVER['REDIRECT_QUERY_STRING'] != '') {
-				$url .= '?' . $_SERVER['REDIRECT_QUERY_STRING'];
-			}
-		}
-		else {
-			$url = $_SERVER['REQUEST_URI'];
-		}
-
-		$route = (new Url($url))->getPath();
-		if ($route == '/') $route = '';
-
-		return $route;
+		return parent::boot($aEnvironment, $aContext);
 	}
 
 	private $redirecting = false;
-
-	protected function resolveOptions() {
-		parent::resolveOptions();
-
-		$event = new ResolveOptionsEvent('resolve-options', ['target' => $this]);
-
-		$this->dispatchEvent($event, [
-			'listener' => [$this, 'onResolveOptions'],
-		]);
-
-		$this->dispatchEvent($event);
-	}
-
+	
 	protected function onResolveOptions(ResolveOptionsEvent $aEvt) {
+		parent::onResolveOptions($aEvt);
+		
 		$options = $this->getOptions();
 		$options->add('app.allowCachedResponse', true);
 		$options->add('app.allowStoredResponse', true);
@@ -84,20 +57,11 @@ abstract class WebController extends Controller {
 			header('Cache-Control: ' . implode(', ', array_keys($cacheControl)));
 		}
 	}
-
-	public function processRoute($aInfo) {
-		$info = parent::processRoute($aInfo);
+	
+	public function routeDynamic(ContextInterface $aContext): ContextInterface {
+		$info = parent::routeDynamic($aContext);
 		
-		$info = array_replace([
-			'moduleCode' => '',
-			'nextRoute' => null,
-			'controllerOptions' => [],
-			'hints' => [],
-			'input' => [],
-		], $info);
-
-		$event = new ProcessRouteEvent('process-route', ['target' => $this]);
-		$event->setRoute($info);
+		$event = new ProcessRouteEvent('process-route', ['target' => $this], $info);
 
 		$this->dispatchEvent($event, [
 			'listener' => [$this, 'onProcessRoute'],
@@ -105,7 +69,7 @@ abstract class WebController extends Controller {
 
 		$this->dispatchEvent($event);
 
-		return $event->getRoute();
+		return $aContext;
 	}
 
 	public function getRequestedViewType() {
@@ -118,10 +82,6 @@ abstract class WebController extends Controller {
 		);
 
 		return $type;
-	}
-
-	public function createInput() {
-		return new WebInput();
 	}
 
 	public function queueRedirect($aUrl, $aOptions = []) {
@@ -218,21 +178,34 @@ abstract class WebController extends Controller {
 			]);
 		}
 
-		//reboot to the 'Error' module.
-		//We use the Error module to present error messages to the client
-		$controller = static::boot([
-			'moduleCode' => 'Error', //boot to the 'Error' module
-			'nextRoute' => static::getInitialRoute(), //process the entire route again
-
-			//specify some initial hints, such as the exception we are handling
-			'hints' => [
-				'app' => [
-					'errorState' => [
-						'error' => $finalEx,
+		
+		//reboot to the 'Error' module
+		//We create a totally new context here, but do preserve the boot history, so that we avoid
+		//infinite loops caused by any continuously failing error recovery.
+		
+		$context = new WebContext([
+			'route' => new Route([
+				'moduleCode' => 'Error', //boot to the 'Error' module
+				
+				//specify some initial hints, such as the exception we are handling
+				'hints' => [
+					'app' => [
+						'errorState' => [
+							'error' => $finalEx,
+						],
 					],
 				],
-			],
+			]),
+			
+			'url' => $this->getContext()->getUrl(),
+			'bootPath' => $this->getContext()->getBootPath(),
+			'bootRecoveryCount' => $this->getContext()->getBootRecoveryCount() + 1,
 		]);
+		
+		$controller = static::boot(
+			$context,
+			$this->getEnvironment()
+		);
 
 		if ($controller) {
 			$controller->connect();
@@ -254,12 +227,12 @@ abstract class WebController extends Controller {
 
 	public function markResolved() {
 		parent::markResolved();
-
-		Env::getStandardOutput()->addEventListener('standard-output', [$this, 'handleStandardOutput']);
+		
+		$this->getEnvironment()->getStandardOutput()->addEventListener('standard-output', [$this, 'handleStandardOutput']);
 	}
 
-	public function __construct($aCode, $aOptions = []) {
-		parent::__construct($aCode, $aOptions);
+	public function __construct(EnvironmentInterface $aEnvironment, $aCode, ContextInterface $aContext, $aOptions = []) {
+		parent::__construct($aEnvironment, $aCode, $aContext, $aOptions);
 
 		$this->setDefaultViewType('Html');
 	}

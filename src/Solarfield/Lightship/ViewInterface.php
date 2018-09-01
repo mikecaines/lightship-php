@@ -29,6 +29,8 @@ interface ViewInterface extends EventTargetInterface {
 	 * @return ControllerProxyInterface|null
 	 */
 	public function getController();
+	
+	public function getEnvironment(): EnvironmentInterface;
 
 	public function render();
 

@@ -5,46 +5,46 @@ use Solarfield\Ok\EventTargetInterface;
 
 interface ControllerInterface extends EventTargetInterface {
 	/**
-	 * @param string $aCode
-	 * @param array $aOptions
+	 * @param EnvironmentInterface $aEnvironment
+	 * @param ContextInterface $aContext
 	 * @return ControllerInterface
 	 */
-	static public function fromCode($aCode, $aOptions = array());
-
+	static public function fromContext(EnvironmentInterface $aEnvironment, ContextInterface $aContext): ControllerInterface;
+	
 	/**
-	 * @param string $aCode
-	 * @return ComponentChain
-	 */
-	static public function getComponentChain($aCode): ComponentChain;
-
-	/**
-	 * @return ComponentResolver
-	 */
-	static public function getComponentResolver();
-
-	/**
-	 * @param array $aInfo
+	 * Manages early, low-level routing, in a static context.
+	 * @param EnvironmentInterface $aEnvironment
+	 * @param ContextInterface $aContext
 	 * @return ControllerInterface
 	 */
-	static public function boot($aInfo = []);
-
+	static public function boot(EnvironmentInterface $aEnvironment, ContextInterface $aContext);
+	
 	/**
-	 * @return string
+	 * Performs low-level routing.
+	 * @param EnvironmentInterface $aEnvironment
+	 * @param ContextInterface $aContext
+	 * @return ContextInterface
 	 */
-	static public function getInitialRoute();
-
+	static public function route(EnvironmentInterface $aEnvironment, ContextInterface $aContext): ContextInterface;
+	
 	/**
-	 * @param $aInfo
+	 * Manages late, high-level routing, in a controller instance context.
+	 * @param ContextInterface $aContext
 	 * @return ControllerInterface|null
 	 */
-	public function resolveController($aInfo);
+	public function bootDynamic(ContextInterface $aContext);
 
 	/**
-	 * Called if the controller is resolved to the final controller in resolveController().
+	 * Called if the controller is resolved to the final controller in routeDynamic().
 	 */
 	public function markResolved();
-
-	public function processRoute($aInfo);
+	
+	/**
+	 * Performs high-level routing.
+	 * @param ContextInterface $aContext
+	 * @return ContextInterface
+	 */
+	public function routeDynamic(ContextInterface $aContext): ContextInterface;
 
 	public function run();
 
@@ -53,7 +53,12 @@ interface ControllerInterface extends EventTargetInterface {
 	public function runRender();
 
 	public function handleException(\Throwable $aEx);
-
+	
+	/**
+	 * @return ComponentResolver
+	 */
+	public function getComponentResolver();
+	
 	/**
 	 * @return string|null
 	 */
@@ -65,28 +70,14 @@ interface ControllerInterface extends EventTargetInterface {
 	public function getRequestedViewType();
 
 	/**
-	 * @return HintsInterface
-	 */
-	public function createHints();
-
-	/**
 	 * @return HintsInterface|null
 	 */
 	public function getHints();
-
-	public function setHints(HintsInterface $aHints);
-
-	/**
-	 * @return InputInterface
-	 */
-	public function createInput();
 
 	/**
 	 * @return InputInterface|null
 	 */
 	public function getInput();
-
-	public function setInput(InputInterface $aInput);
 
 	/**
 	 * @return ModelInterface
@@ -125,5 +116,7 @@ interface ControllerInterface extends EventTargetInterface {
 	 */
 	public function getOptions();
 
+	public function getEnvironment(): EnvironmentInterface;
+	
 	public function init();
 }

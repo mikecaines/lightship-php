@@ -1,7 +1,6 @@
 <?php
 namespace Solarfield\Lightship;
 
-use App\Environment as Env;
 use Solarfield\Lightship\Events\ResolveHintsEvent;
 use Solarfield\Lightship\Events\ResolveInputEvent;
 use Solarfield\Lightship\Events\ResolveOptionsEvent;
@@ -10,6 +9,7 @@ use Solarfield\Ok\EventTargetTrait;
 abstract class View implements ViewInterface {
 	use EventTargetTrait;
 	
+	/** @var EnvironmentInterface */ private $environment;
 	private $code;
 	private $model;
 	private $input;
@@ -101,22 +101,12 @@ abstract class View implements ViewInterface {
 	}
 	
 	public function getInput() {
-		if (!$this->input) {
-			if ($this->getController()) {
-				$this->input = $this->getController()->createInput();
-			}
-		}
-		
+		if (!$this->input) $this->input = new WebInput();
 		return $this->input;
 	}
 	
 	public function getHints() {
-		if (!$this->hints) {
-			if ($this->getController()) {
-				$this->hints = $this->getController()->createHints();
-			}
-		}
-		
+		if (!$this->hints) $this->hints = new Hints();
 		return $this->hints;
 	}
 	
@@ -126,6 +116,10 @@ abstract class View implements ViewInterface {
 	
 	public function getController() {
 		return $this->controller;
+	}
+	
+	public function getEnvironment(): EnvironmentInterface {
+		return $this->environment;
 	}
 	
 	public function render() {
@@ -141,9 +135,11 @@ abstract class View implements ViewInterface {
 		$this->resolveHints();
 	}
 	
-	public function __construct($aCode) {
-		if (Env::getVars()->get('logComponentLifetimes')) {
-			Env::getLogger()->debug(get_class($this) . "[code=" . $aCode . "] was constructed");
+	public function __construct(EnvironmentInterface $aEnvironment, string $aCode, $aOptions = []) {
+		$this->environment = $aEnvironment;
+		
+		if ($this->getEnvironment()->getVars()->get('logComponentLifetimes')) {
+			$this->getEnvironment()->getLogger()->debug(get_class($this) . "[code=" . $aCode . "] was constructed");
 		}
 		
 		$this->code = (string)$aCode;
@@ -156,8 +152,8 @@ abstract class View implements ViewInterface {
 	}
 	
 	public function __destruct() {
-		if (Env::getVars()->get('logComponentLifetimes')) {
-			Env::getLogger()->debug(get_class($this) . "[code=" . $this->getCode() . "] was destructed");
+		if ($this->getEnvironment()->getVars()->get('logComponentLifetimes')) {
+			$this->getEnvironment()->getLogger()->debug(get_class($this) . "[code=" . $this->getCode() . "] was destructed");
 		}
 	}
 }

@@ -1,9 +1,6 @@
 <?php
 namespace Solarfield\Lightship;
 
-use App\Environment as Env;
-use Solarfield\Ok\StructUtils;
-
 class ClientSideIncludes {
 	private $view;
 	private $items = [];
@@ -69,7 +66,7 @@ class ClientSideIncludes {
 					//if the item is relative to the app or module
 					if ($item['base'] == 'app' || $item['base'] == 'module') {
 						$moduleCode = $this->view->getCode();
-						$chain = $this->view->getController()->getComponentChain($moduleCode);
+						$chain = $this->view->getEnvironment()->getComponentChain($moduleCode);
 	
 						if ($item['base'] == 'app') {
 							$link = $chain->get('app');
@@ -79,7 +76,7 @@ class ClientSideIncludes {
 						}
 	
 						if ($link) {
-							$sourceDirUrl = Env::getVars()->get('appSourceWebPath') . '/' . str_replace('\\', '/', $link->namespace());
+							$sourceDirUrl = $this->view->getEnvironment()->getVars()->get('appSourceWebPath') . '/' . str_replace('\\', '/', $link->namespace());
 	
 							//if item specifies an explicit file path (relative to link)
 							if ($item['filePath']) {

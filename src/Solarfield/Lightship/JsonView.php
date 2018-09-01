@@ -72,9 +72,9 @@ class JsonView extends View {
 		parent::init();
 		$this->resolveDataRules();
 	}
-
-	public function __construct($aCode) {
+	
+	public function __construct(EnvironmentInterface $aEnvironment, string $aCode, $aOptions = []) {
 		$this->type = 'Json';
-		parent::__construct($aCode);
+		parent::__construct($aEnvironment, $aCode, $aOptions);
 	}
 }

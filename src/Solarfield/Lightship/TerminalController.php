@@ -1,22 +1,15 @@
 <?php
 namespace Solarfield\Lightship;
 
-use App\Environment as Env;
-use Solarfield\Ok\StructUtils;
 use Throwable;
 
+/**
+ * Class TerminalController
+ * @package Solarfield\Lightship
+ *
+ * @method TerminalContext getContext() : ContextInterface
+ */
 abstract class TerminalController extends Controller {
-	static public function getInitialRoute() {
-		$route = null;
-
-		$input = new TerminalInput();
-		$input->importFromGlobals();
-		$input = StructUtils::toArray($input);
-		$route = StructUtils::get($input, '--module');
-
-		return $route;
-	}
-
 	protected function executeScript() {
 		//NOTE: override this method to do your module-specific stuff
 	}
@@ -27,10 +20,6 @@ abstract class TerminalController extends Controller {
 		if ($type === '') $type = $this->getDefaultViewType();
 
 		return $type;
-	}
-
-	public function createInput() {
-		return new TerminalInput();
 	}
 
 	public function runTasks() {
@@ -45,22 +34,11 @@ abstract class TerminalController extends Controller {
 		}
 	}
 
-	public function processRoute($aInfo) {
-		//because of how we implemented getInitialRoute(),
-		//$aInfo['nextRoute'] will contain the value of the --module argument.
-		//The value is expected to be a module code, in camelCase form.
-		//So here, we just route to that module
-
-		return [
-			'moduleCode' => $aInfo['nextRoute'],
-		];
-	}
-
 	public function doTask() {
 		$startTime = microtime(true);
 
 		$input = $this->getInput();
-		$stdout = Env::getStandardOutput();
+		$stdout = $this->getEnvironment()->getStandardOutput();
 
 		$verbose = (bool)$input->getAsString('--verbose');
 
@@ -73,7 +51,7 @@ abstract class TerminalController extends Controller {
 
 		if ($verbose) {
 			$stdout->write("Script '" . $this->getCode() . "' started at " . date('c', $startTime) . '.');
-			$stdout->write("Request ID is " . Env::getVars()->get('requestId') . ".");
+			$stdout->write("Request ID is " . $this->getEnvironment()->getVars()->get('requestId') . ".");
 		}
 
 		$this->executeScript();
@@ -91,11 +69,11 @@ abstract class TerminalController extends Controller {
 			'exception' => $aEx,
 		]);
 
-		Env::getStandardOutput()->error('FATAL ERROR: ' . $aEx->getMessage());
+		$this->getEnvironment()->getStandardOutput()->error('FATAL ERROR: ' . $aEx->getMessage());
 	}
 
-	public function __construct($aCode, $aOptions = []) {
-		parent::__construct($aCode, $aOptions);
+	public function __construct(EnvironmentInterface $aEnvironment, $aCode, ContextInterface $aContext, $aOptions = []) {
+		parent::__construct($aEnvironment, $aCode, $aContext, $aOptions);
 
 		$this->setDefaultViewType('Stdout');
 	}

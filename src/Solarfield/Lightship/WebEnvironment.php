@@ -4,9 +4,9 @@ namespace Solarfield\Lightship;
 require_once __DIR__ . '/Environment.php';
 
 abstract class WebEnvironment extends Environment {
-	static public function init($aOptions) {
+	public function init($aOptions) {
 		parent::init($aOptions);
-		$options = static::getVars();
+		$options = $this->getVars();
 
 		//url to the app package dir, i.e. /__
 		$path = preg_replace('/^' . preg_quote(realpath($_SERVER['DOCUMENT_ROOT']), '/') . '/', '', realpath($options->get('appPackageFilePath')));

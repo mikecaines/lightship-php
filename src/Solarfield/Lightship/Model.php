@@ -1,13 +1,13 @@
 <?php
 namespace Solarfield\Lightship;
 
-use \app\Environment as Env;
 use Solarfield\Ok\StructUtils;
 
 class Model implements ModelInterface {
 	private $code;
 	private $data = [];
-
+	/** @var EnvironmentInterface */ private $environment;
+	
 	public function getCode() {
 		return $this->code;
 	}
@@ -36,22 +36,28 @@ class Model implements ModelInterface {
 	public function toArray() {
 		return $this->data;
 	}
+	
+	public function getEnvironment(): EnvironmentInterface {
+		return $this->environment;
+	}
 
 	public function init() {
 		//this method provides a hook to resolve plugins, options, etc.
 	}
 
-	public function __construct($aCode) {
-		if (Env::getVars()->get('logComponentLifetimes')) {
-			Env::getLogger()->debug(get_class($this) . "[code=" . $aCode . "] was constructed.");
+	public function __construct(EnvironmentInterface $aEnvironment, string $aCode, $aOptions = []) {
+		$this->environment = $aEnvironment;
+		
+		if ($this->getEnvironment()->getVars()->get('logComponentLifetimes')) {
+			$this->getEnvironment()->getLogger()->debug(get_class($this) . "[code=" . $aCode . "] was constructed.");
 		}
 
 		$this->code = (string)$aCode;
 	}
 
 	public function __destruct() {
-		if (Env::getVars()->get('logComponentLifetimes')) {
-			Env::getLogger()->debug(get_class($this) . "[code=" . $this->getCode() . "] was destructed.");
+		if ($this->getEnvironment()->getVars()->get('logComponentLifetimes')) {
+			$this->getEnvironment()->getLogger()->debug(get_class($this) . "[code=" . $this->getCode() . "] was destructed.");
 		}
 	}
 }

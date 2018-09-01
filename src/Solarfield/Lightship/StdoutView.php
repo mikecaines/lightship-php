@@ -1,8 +1,6 @@
 <?php
 namespace Solarfield\Lightship;
 
-use App\Environment as Env;
-
 class StdoutView extends View {
 	public function handleStandardOutput(StandardOutputEvent $aEvt) {
 		$this->out($aEvt->getText());
@@ -18,12 +16,12 @@ class StdoutView extends View {
 
 	public function init() {
 		parent::init();
-
-		Env::getStandardOutput()->addEventListener('standard-output', [$this, 'handleStandardOutput']);
+		
+		$this->getEnvironment()->getStandardOutput()->addEventListener('standard-output', [$this, 'handleStandardOutput']);
 	}
-
-	public function __construct($aCode) {
+	
+	public function __construct(EnvironmentInterface $aEnvironment, string $aCode, $aOptions = []) {
 		$this->type = 'Stdout';
-		parent::__construct($aCode);
+		parent::__construct($aEnvironment, $aCode, $aOptions);
 	}
 }

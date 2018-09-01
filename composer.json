@@ -17,7 +17,8 @@
 
 	"require": {
 		"solarfield/ok-kit-php": "^0.0",
-		"psr/log": "^1"
+		"psr/log": "^1",
+		"guzzlehttp/psr7": "^1.4"
 	},
 
 	"suggest": {

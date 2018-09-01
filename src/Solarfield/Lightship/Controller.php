@@ -1,9 +1,9 @@
 <?php
 namespace Solarfield\Lightship;
 
-use App\Environment as Env;
 use Exception;
 use Solarfield\Lightship\Errors\UnresolvedRouteException;
+use Solarfield\Lightship\Events\ResolveOptionsEvent;
 use Solarfield\Ok\EventTargetTrait;
 use Solarfield\Ok\MiscUtils;
 use Solarfield\Ok\StructUtils;
@@ -12,13 +12,12 @@ use Throwable;
 abstract class Controller implements ControllerInterface {
 	use EventTargetTrait;
 	
-	static private $bootPath = [];
-	static private $bootLoopRecoveryAttempted;
-	static private $componentResolver;
-	
-	static public function fromCode($aCode, $aOptions = array()) {
-		$component = static::getComponentResolver()->resolveComponent(
-			static::getComponentChain($aCode),
+	static public function fromContext(EnvironmentInterface $aEnvironment, ContextInterface $aContext): ControllerInterface {
+		$moduleCode = $aContext->getRoute()->getModuleCode();
+		$options = $aContext->getRoute()->getControllerOptions();
+		
+		$component = (new ComponentResolver($aEnvironment))->resolveComponent(
+			$aEnvironment->getComponentChain($moduleCode),
 			'Controller',
 			null,
 			null
@@ -26,7 +25,7 @@ abstract class Controller implements ControllerInterface {
 		
 		if (!$component) {
 			throw new \Exception(
-				"Could not resolve Controller component for module '" . $aCode . "'."
+				"Could not resolve Controller component for module '" . $moduleCode . "'."
 				. " No component class files could be found."
 			);
 		}
@@ -36,53 +35,26 @@ abstract class Controller implements ControllerInterface {
 		
 		if (!class_exists($component['className'])) {
 			throw new \Exception(
-				"Could not resolve Controller component for module '" . $aCode . "'."
+				"Could not resolve Controller component for module '" . $moduleCode . "'."
 				. " No component class was found in include file '" . $component['includeFilePath'] . "'."
 			);
 		}
 		
 		/** @var Controller $controller */
-		$controller = new $component['className']($aCode, $aOptions);
+		$controller = new $component['className']($aEnvironment, $moduleCode, $aContext, $options);
 		
 		return $controller;
 	}
 	
-	static public function getComponentChain($aModuleCode): ComponentChain {
-		$chain = clone Env::getComponentChain();
-		
-		if ($aModuleCode != null) {
-			$moduleNamespace = $aModuleCode;
-			$moduleDir = $moduleNamespace;
-			
-			$chain->insertAfter(null, [
-				'id' => 'module',
-				'namespace' => 'App\\Modules\\' . $moduleNamespace,
-				'path' => Env::getVars()->get('appPackageFilePath') . '/App/Modules/' . $moduleDir,
-			]);
-		}
-		
-		return $chain;
+	static public function route(EnvironmentInterface $aEnvironment, ContextInterface $aContext): ContextInterface {
+		return $aContext;
 	}
 	
-	static public function processInitialRoute() {
-		return null;
-	}
-	
-	static public function getComponentResolver() {
-		if (!self::$componentResolver) {
-			self::$componentResolver = new ComponentResolver([
-				'logger' => Env::getLogger()->withName('controller'),
-			]);
-		}
-		
-		return self::$componentResolver;
-	}
-	
-	static public function bootstrap() {
+	static public function bootstrap(EnvironmentInterface $aEnvironment, ContextInterface $aContext) {
 		$exitCode = 1;
 		
 		try {
-			if (($controller = static::boot(static::processInitialRoute()))) {
+			if (($controller = static::boot($aEnvironment, $aContext))) {
 				try {
 					$controller->connect();
 					$controller->run();
@@ -95,18 +67,18 @@ abstract class Controller implements ControllerInterface {
 		}
 		
 		catch (Throwable $ex) {
-			static::bail($ex);
+			static::bail($aEnvironment, $ex);
 		}
 		
 		return $exitCode;
 	}
 	
-	static public function boot($aInfo = null) {
-		if (Env::getVars()->get('logMemUsage')) {
+	static public function boot(EnvironmentInterface $aEnvironment, ContextInterface $aContext) {
+		if ($aEnvironment->getVars()->get('logMemUsage')) {
 			$bytesUsed = memory_get_usage();
 			$bytesLimit = ini_get('memory_limit');
 			
-			Env::getLogger()->debug(
+			$aEnvironment->getLogger()->debug(
 				'mem[boot begin]: ' . ceil($bytesUsed/1024) . 'K/' . $bytesLimit
 				. ' ' . round($bytesUsed/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
 			);
@@ -114,26 +86,22 @@ abstract class Controller implements ControllerInterface {
 			unset($bytesUsed, $bytesLimit);
 		}
 		
-		if (Env::getVars()->get('logPaths')) {
-			Env::getLogger()->debug('App dependencies file path: '. Env::getVars()->get('appDependenciesFilePath'));
-			Env::getLogger()->debug('App package file path: '. Env::getVars()->get('appPackageFilePath'));
+		if ($aEnvironment->getVars()->get('logPaths')) {
+			$aEnvironment->getLogger()->debug('App dependencies file path: '. $aEnvironment->getVars()->get('appDependenciesFilePath'));
+			$aEnvironment->getLogger()->debug('App package file path: '. $aEnvironment->getVars()->get('appPackageFilePath'));
 		}
 		
-		//default some expected boot info
-		//Any additional data will be kept and passed to resolveController()
-		$info = $aInfo?:[];
-		if (!array_key_exists('moduleCode', $info)) $info['moduleCode'] = '';
-		if (!array_key_exists('nextRoute', $info)) $info['nextRoute'] = static::getInitialRoute();
-		if (!array_key_exists('controllerOptions', $info)) $info['controllerOptions'] = [];
+		$context = static::route($aEnvironment, $aContext);
+		$nextStep = $context->getRoute()->getNextStep();
 		
-		$stubController = static::fromCode($info['moduleCode'], $info['controllerOptions']);
+		$stubController = static::fromContext($aEnvironment, $context);
 		$stubController->init();
 		
 		$finalController = null;
 		$finalError = null;
 		
 		try {
-			$finalController = $stubController->resolveController($info);
+			$finalController = $stubController->bootDynamic($context);
 		}
 		catch (Throwable $ex) {
 			$finalError = $ex;
@@ -143,22 +111,21 @@ abstract class Controller implements ControllerInterface {
 		if (!$finalController && !$finalError) {
 			//imply a 'could not route' error
 			
-			$t = $info['nextRoute'];
-			$message = "Could not route: " . (is_scalar($t) ? "'$t'" : MiscUtils::varInfo($t)) . ".";
+			$message = "Could not route: " . (is_scalar($nextStep) ? "'$nextStep'" : MiscUtils::varInfo($nextStep)) . ".";
 			
 			$finalError = new UnresolvedRouteException(
 				$message, 0, null,
 				[
-					'iterations' => array_values(self::$bootPath),
+					'bootPath' => $context->getBootPath(),
 				]
 			);
 			
-			unset($t, $message);
+			unset($nextStep, $message);
 		}
 		
 		if ($finalError) {
 			//if the boot loop was already recovered previously
-			if (self::$bootLoopRecoveryAttempted) {
+			if ($context->getBootRecoveryCount() > 0) {
 				//don't attempt to recover again, to avoid causing an infinite loop
 				throw new Exception(
 					"Unrecoverable boot loop error.",
@@ -166,24 +133,21 @@ abstract class Controller implements ControllerInterface {
 				);
 			}
 			
-			//flag that we are attempting to recover the boot loop
-			self::$bootLoopRecoveryAttempted = true;
-			
 			//let the stub controller handle the exception
 			$stubController->handleException($finalError);
 		}
 		
-		if (Env::getVars()->get('logMemUsage')) {
+		if ($aEnvironment->getVars()->get('logMemUsage')) {
 			$bytesUsed = memory_get_usage();
 			$bytesPeak = memory_get_peak_usage();
 			$bytesLimit = ini_get('memory_limit');
 			
-			Env::getLogger()->debug(
+			$aEnvironment->getLogger()->debug(
 				'mem[boot end]: ' . ceil($bytesUsed/1024) . 'K/' . $bytesLimit
 				. ' ' . round($bytesUsed/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
 			);
 			
-			Env::getLogger()->debug(
+			$aEnvironment->getLogger()->debug(
 				'mem-peak[boot end]: ' . ceil($bytesPeak/1024) . 'K/' . $bytesLimit
 				. ' ' . round($bytesPeak/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
 			);
@@ -193,7 +157,7 @@ abstract class Controller implements ControllerInterface {
 			$bytesUsed = realpath_cache_size();
 			$bytesLimit = ini_get('realpath_cache_size');
 			
-			Env::getLogger()->debug(
+			$aEnvironment->getLogger()->debug(
 				'realpath-cache-size[boot end]: ' . (ceil($bytesUsed/1024)) . 'K/' . $bytesLimit
 				. ' ' . round($bytesUsed/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
 			);
@@ -208,15 +172,17 @@ abstract class Controller implements ControllerInterface {
 	 * Will be called by ::bootstrap() if an uncaught error occurs before a Controller is created.
 	 * Normally this is only called when in an unrecoverable error state.
 	 * @see ::handleException().
+	 * @param EnvironmentInterface $aEnvironment
 	 * @param Throwable $aEx
 	 */
-	static public function bail(Throwable $aEx) {
-		Env::getLogger()->error("Bailed.", ['exception'=>$aEx]);
+	static public function bail(EnvironmentInterface $aEnvironment, Throwable $aEx) {
+		$aEnvironment->getLogger()->error("Bailed.", ['exception'=>$aEx]);
 	}
 	
+	private $environment;
+	private $context;
 	private $code;
 	private $hints;
-	private $input;
 	private $model;
 	private $view;
 	private $defaultViewType;
@@ -224,6 +190,7 @@ abstract class Controller implements ControllerInterface {
 	private $plugins;
 	private $proxy;
 	private $logger;
+	private $componentResolver;
 	
 	private function resolvePluginDependencies_step($plugin) {
 		$plugins = $this->getPlugins();
@@ -250,15 +217,29 @@ abstract class Controller implements ControllerInterface {
 		}
 	}
 	
+	protected function getContext(): ContextInterface {
+		return $this->context;
+	}
+	
 	protected function resolvePlugins() {
 	
 	}
 	
 	protected function resolveOptions() {
+		$event = new ResolveOptionsEvent('resolve-options', ['target' => $this]);
+		
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onResolveOptions'],
+		]);
+		
+		$this->dispatchEvent($event);
+	}
+	
+	protected function onResolveOptions(ResolveOptionsEvent $aEvt) {
 	
 	}
 	
-	public function resolveController($aInfo) {
+	public function bootDynamic(ContextInterface $aContext) {
 		//this remains true until the boot loop stops.
 		//During each iteration of the boot loop, controllers are created and asked to provide the next step in the route.
 		//Once the same step is returned twice (i.e. no movement), we consider the route successfully processed, and the
@@ -272,60 +253,43 @@ abstract class Controller implements ControllerInterface {
 		$model = $this->createModel();
 		$model->init();
 		
-		$input = $this->createInput();
-		$input->importFromGlobals();
-		
-		$hints = $this->createHints();
-		
 		//the temporary boot info passed along through the boot loop
-		//The only data/keys kept are moduleCode, nextRoute, controllerOptions
-		$tempInfo = $aInfo;
+		//The only data/keys kept are moduleCode, nextStep, controllerOptions
+		$tempContext = $aContext;
 		
 		$loopCount = 0;
 		do {
-			if ($tempInfo != null) {
-				//reset the boot info for the next iteration
-				$tempInfo = [
-					'moduleCode' => array_key_exists('moduleCode', $tempInfo) ? $tempInfo['moduleCode'] : '',
-					'nextRoute' => array_key_exists('nextRoute', $tempInfo) ? $tempInfo['nextRoute'] : null,
-					'controllerOptions' => array_key_exists('controllerOptions', $tempInfo) ? $tempInfo['controllerOptions'] : [],
-					'hints' => array_key_exists('hints', $tempInfo) ? $tempInfo['hints'] : [],
-					'input' => array_key_exists('input', $tempInfo) ? $tempInfo['input'] : [],
-				];
-				
-				$input->merge($tempInfo['input']);
-				$hints->merge($tempInfo['hints']);
+			if ($tempContext != null) {
+				$aContext->getInput()->merge($tempContext->getRoute()->getInput());
+				$aContext->getHints()->merge($tempContext->getRoute()->getHints());
 				
 				//create a unique key representing this iteration of the loop.
 				//This is used to detect infinite loops, due to a later iteration routing back to an earlier iteration
 				$tempIteration = implode('+', [
-					$tempInfo['moduleCode'],
-					$tempInfo['nextRoute'],
+					$tempContext->getRoute()->getModuleCode(),
+					$tempContext->getRoute()->getNextStep(),
 				]);
 				
 				//if we don't have a temp controller yet,
 				//or the temp controller is not the target controller (comparing by module code)
 				//or we still have routing to do
-				if ($tempController == null || $tempInfo['moduleCode'] != $tempController->getCode() || $tempInfo['nextRoute'] !== null) {
+				if ($tempController == null || $tempContext->getRoute()->getModuleCode() != $tempController->getCode() || $tempContext->getRoute()->getNextStep() !== null) {
 					//if the current iteration has not been encountered before
-					if (!array_key_exists($tempIteration, self::$bootPath)) {
+					if (!in_array($tempIteration, $tempContext->getBootPath())) {
 						//append the current iteration to the boot path
-						self::$bootPath[$tempIteration] = [
-							'moduleCode' => $tempInfo['moduleCode'],
-							'nextRoute' => $tempInfo['nextRoute'],
-						];
+						$tempContext = $tempContext->withAddedBootStep($tempIteration);
 						
 						//if we already have a temp controller
 						if ($tempController) {
 							//tell it to create the target controller
-							$tempController = $tempController::fromCode($tempInfo['moduleCode'], $tempInfo['controllerOptions']);
+							$tempController = $tempController::fromContext($this->getEnvironment(), $tempContext);
 							$tempController->init();
 						}
 						
 						//else we don't have a controller yet
 						else {
 							//if the target controller's code is the same as the current controller
-							if ($tempInfo['moduleCode'] == $this->getCode()) {
+							if ($tempContext->getRoute()->getModuleCode() == $this->getCode()) {
 								//use the current controller as the target controller
 								$tempController = $this;
 							}
@@ -333,31 +297,25 @@ abstract class Controller implements ControllerInterface {
 							//else the target controller's code is different that the current controller
 							else {
 								//tell the current controller to create the target controller
-								$tempController = $this::fromCode($tempInfo['moduleCode'], $tempInfo['controllerOptions']);
+								$tempController = $this::fromContext($this->getEnvironment(), $tempContext);
 								$tempController->init();
 							}
 						}
-						
-						//attach the hints to the new temp controller
-						$tempController->setHints($hints);
-						
-						//attach the input to the new temp controller
-						$tempController->setInput($input);
 						
 						//attach the model to the new temp controller
 						$tempController->setModel($model);
 						
 						//if we have routing to do
-						if ($tempInfo['nextRoute'] != null || $loopCount == 0) {
+						if ($tempContext->getRoute()->getNextStep() != null || $loopCount == 0) {
 							//tell the temp controller to process the route
-							$newInfo = $tempController->processRoute($tempInfo);
+							$newContext = $tempController->routeDynamic($tempContext);
 							
-							if (Env::getVars()->get('logRouting')) {
-								$this->getLogger()->debug(get_class($tempController) . ' routed from -> to: ' . MiscUtils::varInfo($tempInfo) . ' -> ' . MiscUtils::varInfo($newInfo));
+							if ($this->getEnvironment()->getVars()->get('logRouting')) {
+								$this->getLogger()->debug(get_class($tempController) . ' routed from -> to: ' . MiscUtils::varInfo($tempContext->getRoute()) . ' -> ' . MiscUtils::varInfo($newContext->getRoute()));
 							}
 							
-							$tempInfo = $newInfo;
-							unset($newInfo);
+							$tempContext = $newContext;
+							unset($newContext);
 							
 							//if we get here, the next iteration of the boot loop will now occur
 						}
@@ -371,10 +329,7 @@ abstract class Controller implements ControllerInterface {
 						$keepRouting = false;
 						
 						//append the current iteration to the boot path
-						self::$bootPath[$tempIteration] = [
-							'moduleCode' => $tempInfo['moduleCode'],
-							'nextRoute' => $tempInfo['nextRoute'],
-						];
+						$tempContext = $tempContext->withAddedBootStep($tempIteration);
 					}
 				}
 				
@@ -409,8 +364,8 @@ abstract class Controller implements ControllerInterface {
 	
 	}
 	
-	public function processRoute($aInfo) {
-		return $aInfo;
+	public function routeDynamic(ContextInterface $aContext): ContextInterface {
+		return $aContext;
 	}
 	
 	public function connect() {
@@ -452,7 +407,17 @@ abstract class Controller implements ControllerInterface {
 	 * @param Throwable $aEx
 	 */
 	public function handleException(Throwable $aEx) {
-		static::bail($aEx);
+		static::bail($this->getEnvironment(), $aEx);
+	}
+	
+	public function getComponentResolver() {
+		if (!$this->componentResolver) {
+			$this->componentResolver = new ComponentResolver($this->getEnvironment(), [
+				'logger' => $this->getLogger()->withName($this->getLogger()->getName() . '/componentResolver'),
+			]);
+		}
+		
+		return $this->componentResolver;
 	}
 	
 	public function getDefaultViewType() {
@@ -463,27 +428,15 @@ abstract class Controller implements ControllerInterface {
 		$this->defaultViewType = (string)$aType;
 	}
 	
-	public function createHints() {
-		return new Hints();
-	}
-	
 	public function getHints() {
-		return $this->hints;
-	}
-	
-	public function setHints(HintsInterface $aHints) {
-		$this->hints = $aHints;
-	}
-	
-	public function setInput(InputInterface $aInput) {
-		$this->input = $aInput;
+		return $this->getContext()->getHints();
 	}
 	
 	/**
 	 * @return InputInterface
 	 */
 	public function getInput() {
-		return $this->input;
+		return $this->getContext()->getInput();
 	}
 	
 	public function setModel(ModelInterface $aModel) {
@@ -500,8 +453,8 @@ abstract class Controller implements ControllerInterface {
 	public function createModel() {
 		$code = $this->getCode();
 		
-		$component = static::getComponentResolver()->resolveComponent(
-			static::getComponentChain($code),
+		$component = $this->getComponentResolver()->resolveComponent(
+			$this->getEnvironment()->getComponentChain($code),
 			'Model'
 		);
 		
@@ -522,7 +475,7 @@ abstract class Controller implements ControllerInterface {
 			);
 		}
 		
-		$model = new $component['className']($code);
+		$model = new $component['className']($this->getEnvironment(), $code);
 		
 		return $model;
 	}
@@ -530,8 +483,8 @@ abstract class Controller implements ControllerInterface {
 	public function createView($aType) {
 		$code = $this->getCode();
 		
-		$component = static::getComponentResolver()->resolveComponent(
-			static::getComponentChain($code),
+		$component = $this->getComponentResolver()->resolveComponent(
+			$this->getEnvironment()->getComponentChain($code),
 			'View',
 			$aType
 		);
@@ -553,7 +506,7 @@ abstract class Controller implements ControllerInterface {
 			);
 		}
 		
-		$view = new $component['className']($code);
+		$view = new $component['className']($this->getEnvironment(), $code);
 		
 		return $view;
 	}
@@ -596,10 +549,14 @@ abstract class Controller implements ControllerInterface {
 	
 	public function getLogger() {
 		if (!$this->logger) {
-			$this->logger = Env::getLogger()->withName('controller[' . $this->getCode() . ']');
+			$this->logger = $this->getEnvironment()->getLogger()->withName('controller[' . $this->getCode() . ']');
 		}
 		
 		return $this->logger;
+	}
+	
+	public function getEnvironment(): EnvironmentInterface {
+		return $this->environment;
 	}
 	
 	public function init() {
@@ -610,16 +567,19 @@ abstract class Controller implements ControllerInterface {
 		$this->resolveOptions();
 	}
 	
-	public function __construct($aCode, $aOptions = []) {
+	public function __construct(EnvironmentInterface $aEnvironment, $aCode, ContextInterface $aContext, $aOptions = []) {
+		$this->environment = $aEnvironment;
+		$this->componentResolver = new ComponentResolver($aEnvironment);
+		$this->context = $aContext;
 		$this->code = (string)$aCode;
 		
-		if (Env::getVars()->get('logComponentLifetimes')) {
+		if ($aEnvironment->getVars()->get('logComponentLifetimes')) {
 			$this->getLogger()->debug(get_class($this) . "[code=" . $aCode . "] was constructed");
 		}
 	}
 	
 	public function __destruct() {
-		if (Env::getVars()->get('logComponentLifetimes')) {
+		if ($this->getEnvironment()->getVars()->get('logComponentLifetimes')) {
 			$this->getLogger()->debug(get_class($this) . "[code=" . $this->getCode() . "] was destructed");
 		}
 	}

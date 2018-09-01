@@ -1,21 +1,42 @@
 <?php
 namespace Solarfield\Lightship;
 
+use Psr\Http\Message\ServerRequestInterface;
 use Solarfield\Ok\StringUtils;
 use Solarfield\Ok\StructUtils;
 
 class WebInput implements InputInterface {
 	private $data = [];
 
-	private function normalize($aArray) {
+	static private function normalize($aArray) {
 		$arr = [];
 
 		foreach ($aArray as $k => $v) {
 			$k = StringUtils::dashToCamel($k);
-			$arr[$k] = is_array($v) ? $this->normalize($v) : $v;
+			$arr[$k] = is_array($v) ? static::normalize($v) : $v;
 		}
 
 		return $arr;
+	}
+	
+	static public function fromRequest(ServerRequestInterface $aRequest) : InputInterface {
+		$data = [];
+		
+		// import query params
+		$requestData = $aRequest->getQueryParams();
+		$requestData = static::normalize($requestData);
+		$requestData = StructUtils::unflatten($requestData, '_');
+		$data = StructUtils::merge($data, $requestData);
+		
+		// import post
+		$requestData = $aRequest->getParsedBody();
+		if (is_array($requestData)) {
+			$requestData = static::normalize($requestData);
+			$requestData = StructUtils::unflatten($requestData, '_');
+			$data = StructUtils::merge($data, $requestData);
+		}
+		
+		return new static($data);
 	}
 
 	public function getAsString($aPath) {
@@ -53,14 +74,8 @@ class WebInput implements InputInterface {
 
 		$this->data = StructUtils::merge($incomingData, $this->data);
 	}
-
-	public function importFromGlobals() {
-		$globals = [$_GET, $_POST, $_FILES];
-
-		foreach ($globals as $global) {
-			$globalData = $this->normalize($global);
-			$globalData = StructUtils::unflatten($globalData, '_');
-			$this->data = StructUtils::merge($this->data, $globalData);
-		}
+	
+	public function __construct($aData = null) {
+		$this->merge($aData?:[]);
 	}
 }

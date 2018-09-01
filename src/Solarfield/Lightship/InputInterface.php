@@ -4,8 +4,6 @@ namespace Solarfield\Lightship;
 use Solarfield\Ok\ToArrayInterface;
 
 interface InputInterface extends ToArrayInterface {
-	public function importFromGlobals();
-
 	public function merge($aData);
 
 	public function mergeReverse($aData);

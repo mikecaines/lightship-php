@@ -8,30 +8,23 @@ use Solarfield\Ok\LoggerInterface;
 use Solarfield\Ok\Logger;
 use Solarfield\Ok\MiscUtils;
 
-abstract class Environment {
-	static private $logger;
-	static private $standardOutput;
-	static private $vars;
-	static private $config;
-	static private $chain;
+class Environment implements EnvironmentInterface {
+	private $logger;
+	private $standardOutput;
+	private $vars;
+	private $config;
+	private $chain;
 	
 	/**
 	 * Creates the logger returned by getLogger().
 	 * Override this to inject a custom logger.
 	 * @return LoggerInterface
 	 */
-	static protected function createLogger(): LoggerInterface {
+	protected function createLogger(): LoggerInterface {
 		return new Logger();
 	}
 	
-	/**
-	 * @return Config
-	 */
-	static public function getConfig() {
-		return self::$config;
-	}
-	
-	static public function createComponentChain(): ComponentChain {
+	protected function createComponentChain(): ComponentChain {
 		$chain = new ComponentChain();
 		
 		$chain->insertAfter(null, [
@@ -43,43 +36,64 @@ abstract class Environment {
 		$chain->insertAfter(null, [
 			'id' => 'app',
 			'namespace' => 'App',
-			'path' => static::getVars()->get('appPackageFilePath') . '/App',
+			'path' => $this->getVars()->get('appPackageFilePath') . '/App',
 		]);
 		
 		return $chain;
 	}
 	
-	static public function getComponentChain(): ComponentChain {
-		if (!self::$chain) self::$chain = static::createComponentChain();
-		return self::$chain;
+	/**
+	 * @return Config
+	 */
+	public function getConfig(): Config {
+		return $this->config;
 	}
 	
-	static public function getLogger(): LoggerInterface {
-		if (!self::$logger) self::$logger = static::createLogger();
-		return self::$logger;
+	public function getComponentChain($aModuleCode): ComponentChain {
+		// create the base chain
+		if (!$this->chain) $this->chain = $this->createComponentChain();
+		
+		$chain = $this->chain;
+		
+		if ($aModuleCode) {
+			$chain = clone $chain;
+			
+			$chain->insertAfter(null, [
+				'id' => 'module',
+				'namespace' => 'App\\Modules\\' . $aModuleCode,
+				'path' => $this->getVars()->get('appPackageFilePath') . '/App/Modules/' . $aModuleCode,
+			]);
+		}
+		
+		return $chain;
+	}
+	
+	public function getLogger(): LoggerInterface {
+		if (!$this->logger) $this->logger = $this->createLogger();
+		return $this->logger;
 	}
 	
 	/**
 	 * @return StandardOutput
 	 */
-	static public function getStandardOutput() {
-		if (!self::$standardOutput) {
-			self::$standardOutput = new StandardOutput();
+	public function getStandardOutput(): StandardOutput {
+		if (!$this->standardOutput) {
+			$this->standardOutput = new StandardOutput();
 		}
 		
-		return self::$standardOutput;
+		return $this->standardOutput;
 	}
 	
-	static public function getVars() {
-		if (!self::$vars) {
+	public function getVars(): Options {
+		if (!$this->vars) {
 			require_once __DIR__ . '/Options.php';
-			self::$vars = new Options(['readOnly'=>true]);
+			$this->vars = new Options(['readOnly'=>true]);
 		}
 		
-		return self::$vars;
+		return $this->vars;
 	}
 	
-	static public function init($aOptions) {
+	public function init($aOptions) {
 		$options = array_replace([
 			'projectPackageFilePath' => null,
 			'appPackageFilePath' => null,
@@ -96,7 +110,7 @@ abstract class Environment {
 			"PHP version 7 or higher is required."
 		);
 		
-		static::getVars()->add('requestId', MiscUtils::guid());
+		$this->getVars()->add('requestId', MiscUtils::guid());
 		
 		//validate app package file path
 		if (!$options['appPackageFilePath']) throw new Exception(
@@ -108,7 +122,7 @@ abstract class Environment {
 				"Invalid appPackageFilePath: '" . $options['appPackageFilePath'] . "'."
 			);
 		}
-		static::getVars()->add('appPackageFilePath', $path);
+		$this->getVars()->add('appPackageFilePath', $path);
 		
 		//set the project package file path
 		//This is the top level directory that contains composer's vendor dir, www, etc.
@@ -119,21 +133,21 @@ abstract class Environment {
 		if (!$projectPackageFilePath) throw new Exception(
 			"Invalid projectPackageFilePath: '" . $options['projectPackageFilePath'] . "'."
 		);
-		static::getVars()->add('projectPackageFilePath', $projectPackageFilePath);
+		$this->getVars()->add('projectPackageFilePath', $projectPackageFilePath);
 		
 		//set the app dependencies dir path (i.e. composer's vendor dir)
 		$path = $projectPackageFilePath . DIRECTORY_SEPARATOR . 'vendor';
 		if (!is_dir($path)) throw new Exception(
 			"Did not find composer's vendor directory at $path. Have you run 'composer install' yet?"
 		);
-		static::getVars()->add('appDependenciesFilePath', $path);
+		$this->getVars()->add('appDependenciesFilePath', $path);
 		
 		
 		//include the config
 		require_once __DIR__ . '/Config.php';
-		$path = static::getVars()->get('appPackageFilePath') . '/config.php';
+		$path = $this->getVars()->get('appPackageFilePath') . '/config.php';
 		/** @noinspection PhpIncludeInspection */
-		self::$config = new Config(file_exists($path) ? MiscUtils::extractInclude($path) : []);
+		$this->config = new Config(file_exists($path) ? MiscUtils::extractInclude($path) : []);
 		
 		//define the low level "unsafe debug mode enabled" flag
 		if (!defined('App\DEBUG')) define('App\DEBUG', false);
@@ -143,15 +157,15 @@ abstract class Environment {
 		//Log message producers may obey it to avoid generating expensive messages.
 		//Normally defaults to WARNING. If \App\DEBUG is enabled, defaults to DEBUG.
 		//@see \Psr\Log\LogLevel
-		//@see static::createLogger()
-		if (($t = static::getConfig()->get('loggingLevel'))) {
+		//@see $this->createLogger()
+		if (($t = $this->getConfig()->get('loggingLevel'))) {
 			if (in_array($t, ['emergency', 'alert', 'critical', 'error', 'warning', 'notice','info', 'debug'])) {
 				$logLevel = $t;
 			}
 			else {
 				$logLevel = LogLevel::WARNING;
 				
-				static::getLogger()->warning("Environment var 'loggingLevel' is invalid.", [
+				$this->getLogger()->warning("Environment var 'loggingLevel' is invalid.", [
 					'value' => $t,
 				]);
 			}
@@ -159,14 +173,14 @@ abstract class Environment {
 		else {
 			$logLevel = \App\DEBUG ? LogLevel::DEBUG : LogLevel::WARNING;
 		}
-		static::getVars()->set('loggingLevel', $logLevel);
+		$this->getVars()->set('loggingLevel', $logLevel);
 		
 		//define some env vars to control log message output
 		//These are noisy, so are disabled by default.
-		static::getVars()->add('logComponentResolution', (bool)static::getConfig()->get('logComponentResolution'));
-		static::getVars()->add('logComponentLifetimes', (bool)static::getConfig()->get('logComponentLifetimes'));
-		static::getVars()->add('logMemUsage', (bool)static::getConfig()->get('logMemUsage'));
-		static::getVars()->add('logPaths', (bool)static::getConfig()->get('logPaths'));
-		static::getVars()->add('logRouting', (bool)static::getConfig()->get('logRouting'));
+		$this->getVars()->add('logComponentResolution', (bool)$this->getConfig()->get('logComponentResolution'));
+		$this->getVars()->add('logComponentLifetimes', (bool)$this->getConfig()->get('logComponentLifetimes'));
+		$this->getVars()->add('logMemUsage', (bool)$this->getConfig()->get('logMemUsage'));
+		$this->getVars()->add('logPaths', (bool)$this->getConfig()->get('logPaths'));
+		$this->getVars()->add('logRouting', (bool)$this->getConfig()->get('logRouting'));
 	}
 }
