@@ -25,4 +25,8 @@ class Hints implements HintsInterface {
 	public function mergeReverse($aData) {
 		$this->data = StructUtils::merge(StructUtils::toArray($aData), $this->data);
 	}
+	
+	public function __construct($aData = null) {
+		$this->merge($aData?:[]);
+	}
 }
