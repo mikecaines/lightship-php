@@ -203,8 +203,8 @@ abstract class WebController extends Controller {
 		]);
 		
 		$controller = static::boot(
-			$context,
-			$this->getEnvironment()
+			$this->getEnvironment(),
+			$context
 		);
 
 		if ($controller) {
