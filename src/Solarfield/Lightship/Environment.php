@@ -86,7 +86,6 @@ class Environment implements EnvironmentInterface {
 	
 	public function getVars(): Options {
 		if (!$this->vars) {
-			require_once __DIR__ . '/Options.php';
 			$this->vars = new Options(['readOnly'=>true]);
 		}
 		
@@ -144,7 +143,6 @@ class Environment implements EnvironmentInterface {
 		
 		
 		//include the config
-		require_once __DIR__ . '/Config.php';
 		$path = $this->getVars()->get('appPackageFilePath') . '/config.php';
 		/** @noinspection PhpIncludeInspection */
 		$this->config = new Config(file_exists($path) ? MiscUtils::extractInclude($path) : []);

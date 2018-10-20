@@ -1,8 +1,6 @@
 <?php
 namespace Solarfield\Lightship;
 
-require_once __DIR__ . '/Environment.php';
-
 abstract class WebEnvironment extends Environment {
 	public function init($aOptions) {
 		parent::init($aOptions);
