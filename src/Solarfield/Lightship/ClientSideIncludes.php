@@ -76,8 +76,8 @@ class ClientSideIncludes {
 						}
 	
 						if ($link) {
-							$sourceDirUrl = $this->view->getEnvironment()->getVars()->get('appSourceWebPath') . '/' . str_replace('\\', '/', $link->namespace());
-	
+							$sourceDirUrl = $this->view->getEnvironment()->getVars()->get('appPackageWebPath') . '/' . str_replace('\\', '/', $link->namespace());
+
 							//if item specifies an explicit file path (relative to link)
 							if ($item['filePath']) {
 								//if file exists on disk
