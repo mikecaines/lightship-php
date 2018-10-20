@@ -46,6 +46,8 @@ interface ControllerInterface extends EventTargetInterface {
 	 */
 	public function routeDynamic(ContextInterface $aContext): ContextInterface;
 
+	public function connect();
+
 	public function run();
 
 	public function runTasks();
