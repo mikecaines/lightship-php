@@ -306,7 +306,7 @@ abstract class Controller implements ControllerInterface {
 						$tempController->setModel($model);
 						
 						//if we have routing to do
-						if ($tempContext->getRoute()->getNextStep() != null || $loopCount == 0) {
+						if ($tempContext->getRoute()->getNextStep() !== null || $loopCount == 0) {
 							//tell the temp controller to process the route
 							$newContext = $tempController->routeDynamic($tempContext);
 							
