@@ -70,7 +70,7 @@ interface ControllerInterface extends EventTargetInterface {
 	public function getRequestedViewType();
 
 	/**
-	 * @return HintsInterface|null
+	 * @return Hints|null
 	 */
 	public function getHints();
 

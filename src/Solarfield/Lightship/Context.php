@@ -18,7 +18,7 @@ abstract class Context implements ContextInterface {
 		return $this->route;
 	}
 	
-	public function getHints(): HintsInterface {
+	public function getHints(): Hints {
 		return $this->hints;
 	}
 	

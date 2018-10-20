@@ -2,8 +2,9 @@
 namespace Solarfield\Lightship;
 
 use Solarfield\Ok\StructUtils;
+use Solarfield\Ok\ToArrayInterface;
 
-class Hints implements HintsInterface {
+class Hints implements ToArrayInterface {
 	private $data = [];
 
 	public function get($aPath) {

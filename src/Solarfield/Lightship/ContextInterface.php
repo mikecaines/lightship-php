@@ -8,7 +8,7 @@ interface ContextInterface {
 	
 	public function getInput(): InputInterface;
 	
-	public function getHints(): HintsInterface;
+	public function getHints(): Hints;
 	
 	public function getRoute(): Route;
 	

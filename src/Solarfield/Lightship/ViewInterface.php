@@ -19,7 +19,7 @@ interface ViewInterface extends EventTargetInterface {
 	public function getInput();
 
 	/**
-	 * @return HintsInterface
+	 * @return Hints
 	 */
 	public function getHints();
 
