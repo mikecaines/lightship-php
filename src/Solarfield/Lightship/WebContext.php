@@ -13,17 +13,10 @@ class WebContext extends Context {
 			'input' => WebInput::fromRequest($aRequest),
 		]);
 
-
 		// resolve the route from the request
-
-		$info = [];
-
-		$nextStep = (new Url($context->getUrl()))->getPath();
-		if ($nextStep == '/') $nextStep = '';
-		$info['nextStep'] = $nextStep;
-
-		$context->setRoute($info);
-
+		$context->setRoute([
+			'nextStep' => (new Url($context->getUrl()))->getPath(),
+		]);
 
 		return $context;
 	}
