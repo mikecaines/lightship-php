@@ -15,7 +15,7 @@ class TerminalInput implements InputInterface {
 
 		if (count($args) > 0) {
 			// if the first argument does not have leading hyphens, consider it an alias for --module
-			if (preg_match('/^[a-z0-9]+$/i', $args[0])) {
+			if (preg_match('/^[[:alnum:]]+$/i', $args[0])) {
 				$data['--module'] = $args[0];
 				array_shift($args);
 			}
