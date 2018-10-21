@@ -24,14 +24,6 @@ abstract class WebController extends Controller {
 	}
 
 	private $redirecting = false;
-	
-	protected function onResolveOptions(ResolveOptionsEvent $aEvt) {
-		parent::onResolveOptions($aEvt);
-		
-		$options = $this->getOptions();
-		$options->add('app.allowCachedResponse', true);
-		$options->add('app.allowStoredResponse', true);
-	}
 
 	/**
 	 * @param ProcessRouteEvent $aEvt
@@ -41,21 +33,7 @@ abstract class WebController extends Controller {
 	}
 
 	protected function onDoTask(DoTaskEvent $aEvt) {
-		$moduleOptions = $this->getOptions();
 
-		$cacheControl = [];
-		if (!$moduleOptions->get('app.allowCachedResponse')) {
-			$cacheControl['no-cache'] = true;
-			$cacheControl['must-revalidate'] = null;
-		}
-		if (!$moduleOptions->get('app.allowStoredResponse')) {
-			$cacheControl['no-cache'] = true;
-			$cacheControl['must-revalidate'] = null;
-			$cacheControl['no-store'] = null;
-		}
-		if ($cacheControl) {
-			header('Cache-Control: ' . implode(', ', array_keys($cacheControl)));
-		}
 	}
 	
 	public function routeDynamic(ContextInterface $aContext): ContextInterface {
