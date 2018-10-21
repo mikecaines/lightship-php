@@ -213,7 +213,7 @@ abstract class HtmlView extends View {
 	}
 
 	public function createTitle() {
-		return $this->getEnvironment()->getVars()->get('requestId');
+		return '';
 	}
 
 	public function getStyleIncludes() {

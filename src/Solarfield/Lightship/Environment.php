@@ -109,8 +109,6 @@ class Environment implements EnvironmentInterface {
 			"PHP version 7 or higher is required."
 		);
 		
-		$this->getVars()->add('requestId', MiscUtils::guid());
-		
 		//validate app package file path
 		if (!$options['appPackageFilePath']) throw new Exception(
 			"The appPackageFilePath option must be specified when calling " . __METHOD__ . "."

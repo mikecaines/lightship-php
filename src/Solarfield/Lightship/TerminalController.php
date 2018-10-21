@@ -52,7 +52,6 @@ abstract class TerminalController extends Controller {
 
 		if ($verbose) {
 			$stdout->write("Script '" . $this->getCode() . "' started at " . date('c', $startTime) . '.');
-			$stdout->write("Request ID is " . $this->getEnvironment()->getVars()->get('requestId') . ".");
 		}
 
 		$this->executeScript();

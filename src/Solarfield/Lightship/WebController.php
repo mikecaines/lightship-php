@@ -14,12 +14,6 @@ use Throwable;
  * @method WebContext getContext() : ContextInterface
  */
 abstract class WebController extends Controller {
-	static public function boot(EnvironmentInterface $aEnvironment, ContextInterface $aContext) {
-		header('X-Request-Guid: ' . $aEnvironment->getVars()->get('requestId'));
-
-		return parent::boot($aEnvironment, $aContext);
-	}
-
 	private $redirecting = false;
 
 	public function getRequestedViewType() {
