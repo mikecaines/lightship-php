@@ -8,27 +8,36 @@ class TerminalInput implements InputInterface {
 
 	static public function fromGlobals(): InputInterface {
 		$data = [];
-		
+
+		// remove the first argument, which is the script-name
 		$args = $_SERVER['argv'];
 		array_shift($args);
-		
-		foreach ($args as $arg) {
-			if (preg_match('/^(-{1,2}[^\s=]+)(?:\=([^ ]*))?$/', $arg, $matches) == 1) {
-				if (count($matches) == 3) {
-					$data[$matches[1]] = $matches[2];
-				}
-				else {
-					$data[$matches[1]] = '1';
-				}
+
+		if (count($args) > 0) {
+			// if the first argument does not have leading hyphens, consider it an alias for --module
+			if (preg_match('/^[a-z0-9]+$/i', $args[0])) {
+				$data['--module'] = $args[0];
+				array_shift($args);
 			}
-			
-			else {
-				throw new \Exception(
-					"Unknown terminal argument: '" . $arg . "'."
-				);
+
+			foreach ($args as $arg) {
+				if (preg_match('/^(-{1,2}[^\s=]+)(?:\=([^ ]*))?$/', $arg, $matches) == 1) {
+					if (count($matches) == 3) {
+						$data[$matches[1]] = $matches[2];
+					}
+					else {
+						$data[$matches[1]] = '1';
+					}
+				}
+
+				else {
+					throw new \Exception(
+						"Unknown terminal argument: '" . $arg . "'."
+					);
+				}
 			}
 		}
-		
+
 		return new static($data);
 	}
 	
