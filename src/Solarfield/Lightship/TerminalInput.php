@@ -21,7 +21,7 @@ class TerminalInput implements InputInterface {
 			}
 
 			foreach ($args as $arg) {
-				if (preg_match('/^(-{1,2}[^\s=]+)(?:\=([^ ]*))?$/', $arg, $matches) == 1) {
+				if (preg_match('/^(-{1,2}[[:alnum:]\-]+)(?:\=([^ ]*))?$/', $arg, $matches) == 1) {
 					if (count($matches) == 3) {
 						$data[$matches[1]] = $matches[2];
 					}
