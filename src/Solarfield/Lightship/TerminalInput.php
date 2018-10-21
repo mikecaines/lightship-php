@@ -7,35 +7,68 @@ class TerminalInput implements InputInterface {
 	private $data = [];
 
 	static public function fromGlobals(): InputInterface {
-		$data = [];
+		$items = [];
 
-		// remove the first argument, which is the script-name
+		// remove the first arg, which is the script-name
 		$args = $_SERVER['argv'];
 		array_shift($args);
 
 		if (count($args) > 0) {
-			// if the first argument does not have leading hyphens, consider it an alias for --module
+			// if the first arg does not have leading hyphens, consider it an alias for --module
 			if (preg_match('/^[[:alnum:]]+$/i', $args[0])) {
-				$data['--module'] = $args[0];
+				$items[] = ['--module', $args[0]];
 				array_shift($args);
 			}
 
+			$index = 0;
 			foreach ($args as $arg) {
-				if (preg_match('/^(-{1,2}[[:alnum:]\-]+)(?:\=([^ ]*))?$/', $arg, $matches) == 1) {
-					if (count($matches) == 3) {
-						$data[$matches[1]] = $matches[2];
+				// if the argument has hyphen prefixes
+				if (preg_match('/^(-{1,2})([[:alnum:]\-]+)(?:\=(.+))?$/', $arg, $matches) == 1) {
+					$hyphens = $matches[1];
+					$name = $matches[2];
+
+					// the optional value, e.g. the 'bar' in --foo=bar
+					$value = count($matches) == 4 ? (string)$matches[3] : null;
+
+					// if the arg is in long form, e.g. --long-arg
+					if ($hyphens == '--') {
+						$childNames = [$name];
 					}
+
+					// else the arg is in short form, e.g. -s, or -lah
 					else {
-						$data[$matches[1]] = '1';
+						// split the name into each character, treating each as an arg name
+						$childNames = preg_split('//u', $name, -1, PREG_SPLIT_NO_EMPTY);
 					}
+
+					foreach ($childNames as $childName) {
+						$items[] = [$hyphens . $childName, $value];
+					}
+
+					$index++;
 				}
 
+				// else the arg does not have a hyphen prefix
 				else {
-					throw new \Exception(
-						"Unknown terminal argument: '" . $arg . "'."
-					);
+					// if the previous arg already specified a value, consider input malformed
+					if ($index == 0 || $items[$index][1] !== null) {
+						throw new \Exception(
+							"Malformed argument: '" . $arg . "'."
+						);
+					}
+
+					// else consider the argument the value of the previous argument
+					// e.g. the 'foo' in 'command -f foo'
+					$items[$index][1] = (string)$arg;
 				}
 			}
+		}
+
+		// restructure the items into key-value pairs,
+		// defaulting any args without a value, to '1'.
+		$data = [];
+		foreach ($items as $item) {
+			$data[$item[0]] = $item[1] === null ? '1' : $item[1];
 		}
 
 		return new static($data);
