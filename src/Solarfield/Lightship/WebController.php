@@ -5,9 +5,6 @@ use Exception;
 use Solarfield\Lightship\Errors\HttpException;
 use Solarfield\Lightship\Errors\UnresolvedRouteException;
 use Solarfield\Lightship\Errors\UserFriendlyException;
-use Solarfield\Lightship\Events\DoTaskEvent;
-use Solarfield\Lightship\Events\ProcessRouteEvent;
-use Solarfield\Lightship\Events\ResolveOptionsEvent;
 use Throwable;
 
 /**
@@ -24,31 +21,6 @@ abstract class WebController extends Controller {
 	}
 
 	private $redirecting = false;
-
-	/**
-	 * @param ProcessRouteEvent $aEvt
-	 */
-	protected function onProcessRoute(ProcessRouteEvent $aEvt) {
-
-	}
-
-	protected function onDoTask(DoTaskEvent $aEvt) {
-
-	}
-	
-	public function routeDynamic(ContextInterface $aContext): ContextInterface {
-		$info = parent::routeDynamic($aContext);
-		
-		$event = new ProcessRouteEvent('process-route', ['target' => $this], $info);
-
-		$this->dispatchEvent($event, [
-			'listener' => [$this, 'onProcessRoute'],
-		]);
-
-		$this->dispatchEvent($event);
-
-		return $aContext;
-	}
 
 	public function getRequestedViewType() {
 		$type = trim($this->getInput()->getAsString('app.viewType.code'));
@@ -121,16 +93,6 @@ abstract class WebController extends Controller {
 				}
 			}
 		}
-	}
-
-	public function doTask() {
-		$event = new DoTaskEvent('do-task', ['target' => $this]);
-
-		$this->dispatchEvent($event, [
-			'listener' => [$this, 'onDoTask'],
-		]);
-
-		$this->dispatchEvent($event);
 	}
 
 	public function handleException(Throwable $aEx) {

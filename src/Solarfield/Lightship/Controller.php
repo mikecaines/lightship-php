@@ -3,6 +3,8 @@ namespace Solarfield\Lightship;
 
 use Exception;
 use Solarfield\Lightship\Errors\UnresolvedRouteException;
+use Solarfield\Lightship\Events\DoTaskEvent;
+use Solarfield\Lightship\Events\ProcessRouteEvent;
 use Solarfield\Lightship\Events\ResolveOptionsEvent;
 use Solarfield\Ok\EventTargetTrait;
 use Solarfield\Ok\MiscUtils;
@@ -238,6 +240,17 @@ abstract class Controller implements ControllerInterface {
 	protected function onResolveOptions(ResolveOptionsEvent $aEvt) {
 	
 	}
+
+	/**
+	 * @param ProcessRouteEvent $aEvt
+	 */
+	protected function onProcessRoute(ProcessRouteEvent $aEvt) {
+
+	}
+
+	protected function onDoTask(DoTaskEvent $aEvt) {
+
+	}
 	
 	public function bootDynamic(ContextInterface $aContext) {
 		//this remains true until the boot loop stops.
@@ -365,6 +378,14 @@ abstract class Controller implements ControllerInterface {
 	}
 	
 	public function routeDynamic(ContextInterface $aContext): ContextInterface {
+		$event = new ProcessRouteEvent('process-route', ['target' => $this], $aContext);
+
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onProcessRoute'],
+		]);
+
+		$this->dispatchEvent($event);
+
 		return $aContext;
 	}
 	
@@ -398,7 +419,17 @@ abstract class Controller implements ControllerInterface {
 		$this->runTasks();
 		$this->runRender();
 	}
-	
+
+	public function doTask() {
+		$event = new DoTaskEvent('do-task', ['target' => $this]);
+
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onDoTask'],
+		]);
+
+		$this->dispatchEvent($event);
+	}
+
 	/**
 	 * Will be called by ::bootstrap() if an uncaught error occurs after a Controller is created.
 	 * Normally this is only called when ::connect() or ::run() fails.
