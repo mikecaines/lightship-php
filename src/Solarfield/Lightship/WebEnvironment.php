@@ -2,8 +2,8 @@
 namespace Solarfield\Lightship;
 
 abstract class WebEnvironment extends Environment {
-	public function init($aOptions) {
-		parent::init($aOptions);
+	public function __construct($aOptions) {
+		parent::__construct($aOptions);
 		$options = $this->getVars();
 
 		//url to the app package dir, i.e. /__

@@ -19,12 +19,11 @@ abstract class TerminalBootstrapper {
 			$autoloader->register();
 			
 			//boot the environment
-			$environment = new \App\Environment();
-			$environment->init([
+			$environment = new \App\Environment([
 				'projectPackageFilePath' => $aOptions['projectPackageFilePath'],
 				'appPackageFilePath' => $aOptions['appPackageFilePath'],
 			]);
-			
+
 			// create the boot context (representing the current invocation of the script)
 			$context = TerminalContext::fromGlobals();
 			

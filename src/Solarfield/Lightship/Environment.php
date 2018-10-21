@@ -92,7 +92,7 @@ class Environment implements EnvironmentInterface {
 		return $this->vars;
 	}
 	
-	public function init($aOptions) {
+	public function __construct($aOptions) {
 		$options = array_replace([
 			'projectPackageFilePath' => null,
 			'appPackageFilePath' => null,
