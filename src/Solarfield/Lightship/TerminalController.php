@@ -1,6 +1,7 @@
 <?php
 namespace Solarfield\Lightship;
 
+use Solarfield\Lightship\Events\DoTaskEvent;
 use Throwable;
 
 /**
@@ -34,7 +35,7 @@ abstract class TerminalController extends Controller {
 		}
 	}
 
-	public function doTask() {
+	public function onDoTask(DoTaskEvent $aEvt) {
 		$startTime = microtime(true);
 
 		$input = $this->getInput();
