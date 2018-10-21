@@ -10,7 +10,7 @@ class TerminalContext extends Context {
 		]);
 		
 		$context->setRoute([
-			'moduleCode' => $context->getInput()->getAsString('--module'),
+			'nextStep' => $context->getInput()->getAsString('--module'),
 		]);
 		
 		return $context;

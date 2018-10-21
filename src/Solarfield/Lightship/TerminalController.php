@@ -11,6 +11,27 @@ use Throwable;
  * @method TerminalContext getContext() : ContextInterface
  */
 abstract class TerminalController extends Controller {
+	static public function route(EnvironmentInterface $aEnvironment, ContextInterface $aContext): ContextInterface {
+		$context = parent::route($aEnvironment, $aContext);
+
+		if (($inputModule = $context->getRoute()->getNextStep()) !== null) {
+			$availableModules = array_filter(
+				scandir($aEnvironment->getVars()->get('appPackageFilePath') . '/App/Modules'),
+				function ($name) {
+					return preg_match('/[a-z0-9]+/i', $name) == true;
+				}
+			);
+
+			if (in_array($inputModule, $availableModules, true)) {
+				$context->setRoute([
+					'moduleCode' => (string)$inputModule,
+				]);
+			}
+		}
+
+		return $context;
+	}
+
 	protected function executeScript() {
 		//NOTE: override this method to do your module-specific stuff
 	}
