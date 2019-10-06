@@ -136,10 +136,12 @@ abstract class HtmlView extends View {
 
 		<title><?php $this->out($this->createTitle()); ?></title>
 		<?php
-		
-		echo($this->createScriptElements());
+
+		// always output stylesheets, before script, to avoid flash-of-unstyled-content (FOAC)
+		// https://bugzilla.mozilla.org/show_bug.cgi?id=1459305
 		echo($this->createStyleElements());
-		
+		echo($this->createScriptElements());
+
 		return ob_get_clean();
 	}
 
