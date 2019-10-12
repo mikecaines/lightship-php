@@ -11,10 +11,21 @@ use Throwable;
  * Class WebController
  * @package Solarfield\Lightship
  *
- * @method WebContext getContext() : ContextInterface
+ * @method WebSourceContext getContext
  */
 abstract class WebController extends Controller {
-	private $redirecting = false;
+	/**
+	 * Will be called by ::boot() if an uncaught error occurs before a Controller is created.
+	 * Normally this is only called when in an unrecoverable error state.
+	 * @see ::handleException().
+	 * @param EnvironmentInterface $aEnvironment
+	 * @param Throwable $aEx
+	 * @return DestinationContextInterface
+	 */
+	static public function bail(EnvironmentInterface $aEnvironment, Throwable $aEx) : DestinationContextInterface {
+		$aEnvironment->getLogger()->error("Bailed.", ['exception'=>$aEx]);
+		return new WebDestinationContext(500);
+	}
 
 	public function getRequestedViewType() {
 		$type = trim($this->getInput()->getAsString('app.viewType.code'));
@@ -33,63 +44,49 @@ abstract class WebController extends Controller {
 			'httpStatusCode' => 302,
 		], $aOptions);
 
-		$this->getModel()->set('app.queuedRedirect', [
+		$this->getHints()->set('app.queuedRedirect', [
 			'url' => (string)$aUrl,
 			'httpStatusCode' => (int)$options['httpStatusCode'],
 		]);
 	}
 
-	public function runTasks() {
-		//if a redirect is queued, we will not call doTask().
-		//Redirects at this level would normally only come from routing.
-		//Redirecting here is ideal, because it is early and inexpensive.
+	public function run() : DestinationContextInterface {
+		$destinationContext = new WebDestinationContext();
 
-		$queuedRedirect = $this->getModel()->get('app.queuedRedirect');
-
-		if ($queuedRedirect) {
-			//flag that we are redirecting. This is used by goRender()
-			$this->redirecting = true;
-
-			header('Location: ' . $queuedRedirect['url'], true, $queuedRedirect['httpStatusCode']);
+		// if a redirect is queued, exit early, skipping doTask() and render()
+		if (($queuedRedirect = $this->getHints()->get('app.queuedRedirect'))) {
+			$destinationContext->queueRedirect($queuedRedirect['url'], $queuedRedirect['httpStatusCode']);
+			return $destinationContext;
 		}
 
-		else {
-			$this->doTask();
+		// connect the view
+		$view = $this->createView($this->getRequestedViewType());
+		$view->setController($this->getProxy());
+		$view->init();
+		$this->getInput()->mergeReverse($view->getInput());
+		$this->getHints()->mergeReverse($view->getHints());
+		$view->setModel($this->getModel());
+
+		$destinationContext = $this->doTask($destinationContext);
+
+		// if a redirect is queued, exit early, skipping render()
+		if (($queuedRedirect = $this->getHints()->get('app.queuedRedirect'))) {
+			$destinationContext->queueRedirect($queuedRedirect['url'], $queuedRedirect['httpStatusCode']);
+			return $destinationContext;
 		}
+
+		//erase any buffered output.
+		//There could be buffered output if we are in a reboot
+		while (ob_get_level() > 0) {
+			ob_end_clean();
+		}
+
+		$destinationContext = $view->render($destinationContext);
+
+		return $destinationContext;
 	}
 
-	public function runRender() {
-		//if we are already flagged as redirecting, do nothing
-		if (!$this->redirecting) {
-			//if a redirect is queued, don't bother rendering (i.e. sending any response body).
-			//Redirects at this level would normally come from within doTask().
-			//Redirecting here is a little more tricky because doTask() has already been called, and is expected to
-			//terminate normally. This method could be implemented in a different way, such as not sending a Location header,
-			//and instead rendering a 'redirecting you to ...' page for the user.
-
-			$queuedRedirect = $this->getModel()->get('app.queuedRedirect');
-
-			if ($queuedRedirect) {
-				header('Location: ' . $queuedRedirect['url'], true, $queuedRedirect['httpStatusCode']);
-			}
-
-			else {
-				$view = $this->getView();
-
-				if ($view) {
-					//erase any buffered output.
-					//There could be buffered output if we are in a reboot
-					while (ob_get_level() > 0) {
-						ob_end_clean();
-					}
-
-					$view->render();
-				}
-			}
-		}
-	}
-
-	public function handleException(Throwable $aEx) {
+	public function handleException(Throwable $aEx) : DestinationContextInterface {
 		$finalEx = $aEx;
 
 		if ($finalEx instanceof UserFriendlyException) {
@@ -117,7 +114,7 @@ abstract class WebController extends Controller {
 		//We create a totally new context here, but do preserve the boot history, so that we avoid
 		//infinite loops caused by any continuously failing error recovery.
 		
-		$context = new WebContext([
+		$context = new WebSourceContext([
 			'route' => new Route([
 				'moduleCode' => 'Error', //boot to the 'Error' module
 				
@@ -136,18 +133,10 @@ abstract class WebController extends Controller {
 			'bootRecoveryCount' => $this->getContext()->getBootRecoveryCount() + 1,
 		]);
 		
-		$controller = static::boot(
-			$this->getEnvironment(),
-			$context
-		);
-
-		if ($controller) {
-			$controller->connect();
-			$controller->run();
-		}
+		return static::boot($this->getEnvironment(), $context);
 	}
 
-	public function __construct(EnvironmentInterface $aEnvironment, $aCode, ContextInterface $aContext, $aOptions = []) {
+	public function __construct(EnvironmentInterface $aEnvironment, $aCode, SourceContextInterface $aContext, $aOptions = []) {
 		parent::__construct($aEnvironment, $aCode, $aContext, $aOptions);
 
 		$this->setDefaultViewType('Html');

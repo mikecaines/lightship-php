@@ -6,55 +6,46 @@ use Solarfield\Ok\EventTargetInterface;
 interface ControllerInterface extends EventTargetInterface {
 	/**
 	 * @param EnvironmentInterface $aEnvironment
-	 * @param ContextInterface $aContext
+	 * @param SourceContextInterface $aContext
 	 * @return ControllerInterface
 	 */
-	static public function fromContext(EnvironmentInterface $aEnvironment, ContextInterface $aContext): ControllerInterface;
-	
+	static public function fromContext(EnvironmentInterface $aEnvironment, SourceContextInterface $aContext): ControllerInterface;
+
 	/**
 	 * Manages early, low-level routing, in a static context.
 	 * @param EnvironmentInterface $aEnvironment
-	 * @param ContextInterface $aContext
-	 * @return ControllerInterface
+	 * @param SourceContextInterface $aContext
+	 * @return DestinationContextInterface
 	 */
-	static public function boot(EnvironmentInterface $aEnvironment, ContextInterface $aContext);
-	
+	static public function boot(EnvironmentInterface $aEnvironment, SourceContextInterface $aContext) : DestinationContextInterface;
+
+	static public function bail(EnvironmentInterface $aEnvironment, \Throwable $aException) : DestinationContextInterface;
+
 	/**
 	 * Performs low-level routing.
 	 * @param EnvironmentInterface $aEnvironment
-	 * @param ContextInterface $aContext
-	 * @return ContextInterface
+	 * @param SourceContextInterface $aContext
+	 * @return SourceContextInterface
 	 */
-	static public function route(EnvironmentInterface $aEnvironment, ContextInterface $aContext): ContextInterface;
-	
+	static public function route(EnvironmentInterface $aEnvironment, SourceContextInterface $aContext): SourceContextInterface;
+
 	/**
 	 * Manages late, high-level routing, in a controller instance context.
-	 * @param ContextInterface $aContext
-	 * @return ControllerInterface|null
+	 * @param SourceContextInterface $aContext
+	 * @return DestinationContextInterface
 	 */
-	public function bootDynamic(ContextInterface $aContext);
+	public function bootDynamic(SourceContextInterface $aContext) : DestinationContextInterface;
 
-	/**
-	 * Called if the controller is resolved to the final controller in routeDynamic().
-	 */
-	public function markResolved();
-	
 	/**
 	 * Performs high-level routing.
-	 * @param ContextInterface $aContext
-	 * @return ContextInterface
+	 * @param SourceContextInterface $aContext
+	 * @return SourceContextInterface
 	 */
-	public function routeDynamic(ContextInterface $aContext): ContextInterface;
+	public function routeDynamic(SourceContextInterface $aContext): SourceContextInterface;
 
-	public function connect();
+	public function run() : DestinationContextInterface;
 
-	public function run();
-
-	public function runTasks();
-
-	public function runRender();
-
-	public function handleException(\Throwable $aEx);
+	public function handleException(\Throwable $aEx) : DestinationContextInterface;
 	
 	/**
 	 * @return ComponentResolver
@@ -98,13 +89,6 @@ interface ControllerInterface extends EventTargetInterface {
 	 * @return ViewInterface
 	 */
 	public function createView($aType);
-
-	/**
-	 * @return ViewInterface|null
-	 */
-	public function getView();
-
-	public function setView(ViewInterface $aView);
 
 	public function getCode();
 

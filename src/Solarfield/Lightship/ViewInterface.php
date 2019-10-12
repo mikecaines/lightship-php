@@ -32,7 +32,7 @@ interface ViewInterface extends EventTargetInterface {
 	
 	public function getEnvironment(): EnvironmentInterface;
 
-	public function render();
+	public function render(DestinationContextInterface $aDestinationContext) : DestinationContextInterface;
 
 	public function init();
 }

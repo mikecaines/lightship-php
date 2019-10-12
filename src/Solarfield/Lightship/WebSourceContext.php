@@ -6,11 +6,12 @@ namespace Solarfield\Lightship;
 use Psr\Http\Message\ServerRequestInterface;
 use Solarfield\Ok\Url;
 
-class WebContext extends Context {
-	static public function fromRequest(ServerRequestInterface $aRequest): WebContext {
+class WebSourceContext extends SourceContext {
+	static public function fromRequest(ServerRequestInterface $aRequest): WebSourceContext {
 		$context = new static([
 			'url' => (string)$aRequest->getUri(),
 			'input' => WebInput::fromRequest($aRequest),
+			'headers' => $aRequest->getHeaders(),
 		]);
 
 		// resolve the route from the request
@@ -22,15 +23,32 @@ class WebContext extends Context {
 	}
 
 	/** @var string */ private $url;
+	/** @var array */ private $headers;
 
 	public function getUrl(): string {
 		return $this->url;
+	}
+
+	public function getHeader(string $aName) {
+		$name = strtolower($aName);
+		if (array_key_exists($name, $this->headers)) return $this->headers[$name][0];
+		return null;
+	}
+
+	public function toParts(): array {
+		$parts = parent::toParts();
+
+		$parts['url'] = $this->getUrl();
+		$parts['headers'] = $this->headers;
+
+		return $parts;
 	}
 
 	public function __construct(array $aOptions = null) {
 		$options = array_replace([
 			'input' => null,
 			'url' => null,
+			'headers' => null,
 		], $aOptions?:[]);
 
 		if ($options['input']) {
@@ -43,6 +61,17 @@ class WebContext extends Context {
 		}
 
 		$this->url = (string)$options['url'];
+
+		$this->headers = [];
+		if ($options['headers']) {
+			foreach ($options['headers'] as $name => $values) {
+				$name = strtolower($name);
+
+				foreach ($values as $value) {
+					$this->headers[$name][] = (string)$value;
+				}
+			}
+		}
 
 		parent::__construct($options);
 	}

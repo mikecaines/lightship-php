@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Solarfield\Lightship;
 
-interface ContextInterface {
-	static public function fromParts(array $aParts): ContextInterface;
+interface SourceContextInterface {
+	static public function fromParts(array $aParts): SourceContextInterface;
 	
 	public function getInput(): InputInterface;
 	
@@ -21,7 +21,7 @@ interface ContextInterface {
 	
 	public function getBootRecoveryCount(): int;
 	
-	public function withAddedBootStep($aStep): ContextInterface;
+	public function addBootStep($aStep);
 	
 	public function toParts(): array;
 }

@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Solarfield\Lightship;
 
-class TerminalContext extends Context {
-	static public function fromGlobals(): TerminalContext {
+class TerminalSourceContext extends SourceContext {
+	static public function fromGlobals(): TerminalSourceContext {
 		$context = new static([
 			'input' => TerminalInput::fromGlobals(),
 		]);

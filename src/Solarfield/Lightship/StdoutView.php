@@ -10,8 +10,8 @@ class StdoutView extends View {
 		fwrite(STDOUT, $aMessage . "\n");
 	}
 
-	public function render() {
-		//do nothing
+	public function render(DestinationContextInterface $aDestinationContext) : DestinationContextInterface {
+		return $aDestinationContext;
 	}
 
 	public function init() {

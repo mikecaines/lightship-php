@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Solarfield\Lightship;
 
-abstract class Context implements ContextInterface {
-	static public function fromParts(array $aParts): ContextInterface {
+abstract class SourceContext implements SourceContextInterface {
+	static public function fromParts(array $aParts): SourceContextInterface {
 		return new static($aParts);
 	}
 	
@@ -38,10 +38,8 @@ abstract class Context implements ContextInterface {
 		return $this->bootRecoveryCount;
 	}
 	
-	public function withAddedBootStep($aStep): ContextInterface {
-		$parts = $this->toParts();
-		$parts['bootPath'][] = $aStep;
-		return static::fromParts($parts);
+	public function addBootStep($aStep) {
+		$this->bootPath[] = $aStep;
 	}
 	
 	public function toParts(): array {

@@ -8,10 +8,20 @@ use Throwable;
  * Class TerminalController
  * @package Solarfield\Lightship
  *
- * @method TerminalContext getContext() : ContextInterface
+ * @method TerminalSourceContext getContext
  */
 abstract class TerminalController extends Controller {
-	static public function route(EnvironmentInterface $aEnvironment, ContextInterface $aContext): ContextInterface {
+	static public function bail(EnvironmentInterface $aEnvironment, \Throwable $aException): DestinationContextInterface {
+		$aEnvironment->getLogger()->error($aException->getMessage(), [
+			'exception' => $aException,
+		]);
+
+		$aEnvironment->getStandardOutput()->error('FATAL ERROR: ' . $aException->getMessage());
+
+		return new TerminalDestinationContext(1);
+	}
+
+	static public function route(EnvironmentInterface $aEnvironment, SourceContextInterface $aContext): SourceContextInterface {
 		$context = parent::route($aEnvironment, $aContext);
 
 		if (($inputModule = $context->getRoute()->getNextStep()) !== null) {
@@ -44,16 +54,21 @@ abstract class TerminalController extends Controller {
 		return $type;
 	}
 
-	public function runTasks() {
-		$this->doTask();
-	}
+	public function run(): DestinationContextInterface {
+		// connect the view
+		$view = $this->createView($this->getRequestedViewType());
+		$view->setController($this->getProxy());
+		$view->init();
+		$this->getInput()->mergeReverse($view->getInput());
+		$this->getHints()->mergeReverse($view->getHints());
+		$view->setModel($this->getModel());
 
-	public function runRender() {
-		$view = $this->getView();
+		$destinationContext = new TerminalDestinationContext();
 
-		if ($view) {
-			$view->render();
-		}
+		$destinationContext = $this->doTask($destinationContext);
+		$destinationContext = $view->render($destinationContext);
+
+		return $destinationContext;
 	}
 
 	public function onDoTask(DoTaskEvent $aEvt) {
@@ -85,15 +100,11 @@ abstract class TerminalController extends Controller {
 		}
 	}
 
-	public function handleException(Throwable $aEx) {
-		$this->getLogger()->error($aEx->getMessage(), [
-			'exception' => $aEx,
-		]);
-
-		$this->getEnvironment()->getStandardOutput()->error('FATAL ERROR: ' . $aEx->getMessage());
+	public function handleException(Throwable $aEx) : DestinationContextInterface {
+		return static::bail($this->getEnvironment(), $aEx);
 	}
 
-	public function __construct(EnvironmentInterface $aEnvironment, $aCode, ContextInterface $aContext, $aOptions = []) {
+	public function __construct(EnvironmentInterface $aEnvironment, $aCode, SourceContextInterface $aContext, $aOptions = []) {
 		parent::__construct($aEnvironment, $aCode, $aContext, $aOptions);
 
 		$this->setDefaultViewType('Stdout');

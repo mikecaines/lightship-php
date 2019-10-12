@@ -1,7 +1,7 @@
 <?php
 namespace Solarfield\Lightship\Events;
 
-use Solarfield\Lightship\ContextInterface;
+use Solarfield\Lightship\SourceContextInterface;
 use Solarfield\Ok\Event;
 
 class ProcessRouteEvent extends Event {
@@ -11,7 +11,7 @@ class ProcessRouteEvent extends Event {
 		return $this->context;
 	}
 	
-	public function __construct($aType, array $aInfo, ContextInterface $aContext) {
+	public function __construct($aType, array $aInfo, SourceContextInterface $aContext) {
 		parent::__construct($aType, $aInfo);
 		$this->context = $aContext;
 	}

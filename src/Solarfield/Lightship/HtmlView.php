@@ -274,13 +274,13 @@ abstract class HtmlView extends View {
 		echo($this->enc($aValue));
 	}
 
-	public function render() {
-		header('Content-Type: text/html; charset=UTF-8');
+	public function render(DestinationContextInterface $aDestinationContext) : DestinationContextInterface {
+		/** @var WebDestinationContext $aDestinationContext */
 
-		$markup = $this->createDocument();
-		$markup = HtmlUtils::squishHtml($markup);
+		$aDestinationContext->setHeader('Content-Type', 'text/html; charset=UTF-8');
+		$aDestinationContext->setBody(HtmlUtils::squishHtml($this->createDocument()));
 
-		echo($markup);
+		return $aDestinationContext;
 	}
 
 	public function __construct(EnvironmentInterface $aEnvironment, string $aCode, $aOptions = []) {

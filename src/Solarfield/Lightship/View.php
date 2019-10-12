@@ -122,10 +122,6 @@ abstract class View implements ViewInterface {
 		return $this->environment;
 	}
 	
-	public function render() {
-	
-	}
-	
 	public function init() {
 		//this method provides a hook to resolve plugins, options, etc.
 		

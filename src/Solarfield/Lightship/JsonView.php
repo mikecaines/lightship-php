@@ -63,9 +63,13 @@ class JsonView extends View {
 		return JsonUtils::toJson($this->createJsonData());
 	}
 
-	public function render() {
-		header('Content-Type: application/json');
-		echo($this->createJson());
+	public function render(DestinationContextInterface $aDestinationContext) : DestinationContextInterface {
+		/** @var WebDestinationContext $aDestinationContext */
+
+		$aDestinationContext->setHeader('Content-Type', 'application/json');
+		$aDestinationContext->setBody($this->createJson());
+
+		return $aDestinationContext;
 	}
 
 	public function init() {
