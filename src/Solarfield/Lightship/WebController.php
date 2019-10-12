@@ -147,24 +147,6 @@ abstract class WebController extends Controller {
 		}
 	}
 
-	public function handleStandardOutput(StandardOutputEvent $aEvt) {
-		$this->getModel()->push('app.standardOutput.messages', [
-			'message' => $aEvt->getText(),
-			'level' => $aEvt->getLevel(),
-			'context' => $aEvt->getContext(),
-		]);
-
-		if (\App\DEBUG) {
-			$this->getLogger()->log($aEvt->getLevel(), '[stdout] ' . $aEvt->getText(), $aEvt->getContext());
-		}
-	}
-
-	public function markResolved() {
-		parent::markResolved();
-		
-		$this->getEnvironment()->getStandardOutput()->addEventListener('standard-output', [$this, 'handleStandardOutput']);
-	}
-
 	public function __construct(EnvironmentInterface $aEnvironment, $aCode, ContextInterface $aContext, $aOptions = []) {
 		parent::__construct($aEnvironment, $aCode, $aContext, $aOptions);
 
