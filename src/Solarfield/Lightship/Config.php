@@ -16,7 +16,7 @@ class Config {
 		);
 		
 		if (array_key_exists($aName, $this->data)) {
-			$value = (string)$this->data[$aName];
+			$value = $this->data[$aName];
 			$this->read[$aName] = null;
 			unset($this->data[$aName]);
 			return $value;

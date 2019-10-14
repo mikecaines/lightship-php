@@ -29,7 +29,7 @@ abstract class WebEnvironment extends Environment {
 				'context' => $aEvt->getContext(),
 			];
 
-			if (\App\DEBUG) {
+			if ($this->isDevModeEnabled()) {
 				$this->getLogger()->debug('[stdout] [' . $aEvt->getLevel() . '] ' . $aEvt->getText(), $aEvt->getContext());
 			}
 		});

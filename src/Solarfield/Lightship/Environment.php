@@ -14,6 +14,7 @@ class Environment implements EnvironmentInterface {
 	private $vars;
 	private $config;
 	private $chain;
+	private $devModeEnabled;
 	
 	/**
 	 * Creates the logger returned by getLogger().
@@ -41,7 +42,11 @@ class Environment implements EnvironmentInterface {
 		
 		return $chain;
 	}
-	
+
+	public function isDevModeEnabled() : bool {
+		return $this->devModeEnabled;
+	}
+
 	/**
 	 * @return Config
 	 */
@@ -144,14 +149,16 @@ class Environment implements EnvironmentInterface {
 		$path = $this->getVars()->get('appPackageFilePath') . '/config.php';
 		/** @noinspection PhpIncludeInspection */
 		$this->config = new Config(file_exists($path) ? MiscUtils::extractInclude($path) : []);
-		
-		//define the low level "unsafe debug mode enabled" flag
-		if (!defined('App\DEBUG')) define('App\DEBUG', false);
+
+		//define the low level "unsafe development mode enabled" flag
+		$this->devModeEnabled = $this->getConfig()->has('UNSAFE_DEV_MODE_ENABLED')
+			? $this->getConfig()->get('UNSAFE_DEV_MODE_ENABLED') : false;
+
 		
 		//add an env var for the desired log message verbosity level
 		//This should be set to least as verbose as you intend to capture in your logger.
 		//Log message producers may obey it to avoid generating expensive messages.
-		//Normally defaults to WARNING. If \App\DEBUG is enabled, defaults to DEBUG.
+		//Normally defaults to WARNING. If dev mode is enabled, defaults to DEBUG.
 		//@see \Psr\Log\LogLevel
 		//@see $this->createLogger()
 		if (($t = $this->getConfig()->get('loggingLevel'))) {
@@ -167,7 +174,7 @@ class Environment implements EnvironmentInterface {
 			}
 		}
 		else {
-			$logLevel = \App\DEBUG ? LogLevel::DEBUG : LogLevel::WARNING;
+			$logLevel = $this->isDevModeEnabled() ? LogLevel::DEBUG : LogLevel::WARNING;
 		}
 		$this->getVars()->set('loggingLevel', $logLevel);
 		
