@@ -336,7 +336,7 @@ abstract class Controller implements ControllerInterface {
 
 	/**
 	 * Will be called by ::boot() if an uncaught error occurs after a Controller is created.
-	 * Normally this is only called when ::connect() or ::run() fails.
+	 * Normally this is only called when ::routeDynamic() or ::run() fails.
 	 * You can override this method, and attempt to boot another Controller for recovery purposes, etc.
 	 * @see ::bail().
 	 * @param Throwable $aEx
