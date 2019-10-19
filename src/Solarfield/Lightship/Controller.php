@@ -32,16 +32,6 @@ abstract class Controller implements ControllerInterface {
 			);
 		}
 		
-		/** @noinspection PhpIncludeInspection */
-		include_once $component['includeFilePath'];
-		
-		if (!class_exists($component['className'])) {
-			throw new \Exception(
-				"Could not resolve Controller component for module '" . $moduleCode . "'."
-				. " No component class was found in include file '" . $component['includeFilePath'] . "'."
-			);
-		}
-		
 		/** @var Controller $controller */
 		$controller = new $component['className']($aEnvironment, $moduleCode, $aContext, $options);
 		
@@ -390,16 +380,6 @@ abstract class Controller implements ControllerInterface {
 			);
 		}
 		
-		/** @noinspection PhpIncludeInspection */
-		include_once $component['includeFilePath'];
-		
-		if (!class_exists($component['className'])) {
-			throw new \Exception(
-				"Could not resolve Model component for module '" . $code . "'."
-				. " No component class was found in include file '" . $component['includeFilePath'] . "'."
-			);
-		}
-		
 		$model = new $component['className']($this->getEnvironment(), $code);
 		
 		return $model;
@@ -418,16 +398,6 @@ abstract class Controller implements ControllerInterface {
 			throw new \Exception(
 				"Could not resolve " . $aType . " View component for module '" . $code . "'."
 				. " No component class files could be found."
-			);
-		}
-		
-		/** @noinspection PhpIncludeInspection */
-		include_once $component['includeFilePath'];
-		
-		if (!class_exists($component['className'])) {
-			throw new \Exception(
-				"Could not resolve " . $aType . " View component for module '" . $code . "'."
-				. " No component class was found in include file '" . $component['includeFilePath'] . "'."
 			);
 		}
 		

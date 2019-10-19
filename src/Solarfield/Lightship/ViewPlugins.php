@@ -25,16 +25,6 @@ class ViewPlugins {
 		);
 
 		if ($component) {
-			/** @noinspection PhpIncludeInspection */
-			include_once $component['includeFilePath'];
-
-			if (!class_exists($component['className'])) {
-				throw new Exception(
-					"Class class '" . $component['className'] . "'"
-					. " was not found in file '" . $component['includeFilePath'] . "'."
-				);
-			}
-
 			$plugin = new $component['className']($this->view, $aComponentCode);
 		}
 
