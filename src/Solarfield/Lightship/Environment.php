@@ -26,21 +26,19 @@ class Environment implements EnvironmentInterface {
 	}
 	
 	protected function createComponentChain(): ComponentChain {
-		$chain = new ComponentChain();
-		
-		$chain->insertAfter(null, [
-			'id' => 'solarfield/lightship-php',
-			'namespace' => __NAMESPACE__,
-			'path' => __DIR__,
+		return new ComponentChain([
+			[
+				'id' => 'solarfield/lightship-php',
+				'namespace' => __NAMESPACE__,
+				'path' => __DIR__,
+			],
+
+			[
+				'id' => 'app',
+				'namespace' => 'App',
+				'path' => $this->getVars()->get('appPackageFilePath') . '/App',
+			]
 		]);
-		
-		$chain->insertAfter(null, [
-			'id' => 'app',
-			'namespace' => 'App',
-			'path' => $this->getVars()->get('appPackageFilePath') . '/App',
-		]);
-		
-		return $chain;
 	}
 
 	public function isDevModeEnabled() : bool {
@@ -61,9 +59,7 @@ class Environment implements EnvironmentInterface {
 		$chain = $this->chain;
 		
 		if ($aModuleCode) {
-			$chain = clone $chain;
-			
-			$chain->insertAfter(null, [
+			$chain = $chain->withLinkAppended([
 				'id' => 'module',
 				'namespace' => 'App\\Modules\\' . $aModuleCode,
 				'path' => $this->getVars()->get('appPackageFilePath') . '/App/Modules/' . $aModuleCode,
