@@ -17,7 +17,7 @@ class ControllerPlugins {
 
 		$plugin = null;
 
-		$component = $this->controller->getComponentResolver()->resolveComponent(
+		$component = $this->controller->getEnvironment()->getComponentResolver()->resolveComponent(
 			$this->controller->getEnvironment()->getComponentChain($this->controller->getCode()),
 			'ControllerPlugin',
 			null,

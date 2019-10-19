@@ -15,6 +15,8 @@ interface EnvironmentInterface {
 	 * @return ComponentChain
 	 */
 	public function getComponentChain($aModuleCode): ComponentChain;
+
+	public function getComponentResolver() : ComponentResolver;
 	
 	public function getStandardOutput(): StandardOutput;
 	

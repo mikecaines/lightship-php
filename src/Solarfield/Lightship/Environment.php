@@ -14,6 +14,7 @@ class Environment implements EnvironmentInterface {
 	private $vars;
 	private $config;
 	private $chain;
+	private $componentResolver;
 	private $devModeEnabled;
 	
 	/**
@@ -38,6 +39,15 @@ class Environment implements EnvironmentInterface {
 				'namespace' => 'App',
 				'path' => $this->getVars()->get('appPackageFilePath') . '/App',
 			]
+		]);
+	}
+
+	public function createComponentResolver() : ComponentResolver {
+		return new ComponentResolver([
+			'logger' => $this->getVars()->get('logComponentResolution')
+				? $this->getLogger()->withName($this->getLogger()->getName() . '/componentResolver') : null,
+
+			'logLevel' => $this->getVars()->get('loggingLevel'),
 		]);
 	}
 
@@ -67,6 +77,11 @@ class Environment implements EnvironmentInterface {
 		}
 		
 		return $chain;
+	}
+
+	public function getComponentResolver() : ComponentResolver {
+		if (!$this->componentResolver) $this->componentResolver = $this->createComponentResolver();
+		return $this->componentResolver;
 	}
 	
 	public function getLogger(): LoggerInterface {

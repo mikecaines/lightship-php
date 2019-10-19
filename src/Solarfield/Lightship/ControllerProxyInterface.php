@@ -3,11 +3,6 @@ namespace Solarfield\Lightship;
 
 interface ControllerProxyInterface {
 	/**
-	 * @return ComponentResolver
-	 */
-	public function getComponentResolver();
-
-	/**
 	 * @param string $aType
 	 * @return ViewInterface
 	 */

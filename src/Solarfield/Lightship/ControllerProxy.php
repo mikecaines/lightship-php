@@ -5,10 +5,6 @@ class ControllerProxy implements ControllerProxyInterface {
 	private $controller;
 	private $plugins;
 
-	public function getComponentResolver() {
-		return $this->controller->getComponentResolver();
-	}
-
 	public function createView($aType) {
 		return $this->controller->createView($aType);
 	}

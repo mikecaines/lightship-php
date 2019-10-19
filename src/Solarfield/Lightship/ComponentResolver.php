@@ -1,12 +1,15 @@
 <?php
 namespace Solarfield\Lightship;
 
+use Exception;
+use Psr\Log\LogLevel;
 use Solarfield\Ok\LoggerInterface;
+use Solarfield\Ok\LogUtils;
 
 class ComponentResolver {
 	/** @var LoggerInterface */ private $logger;
-	/** @var EnvironmentInterface */ private $environment;
-	
+	private $logLevel;
+
 	public function resolveComponent(ComponentChain $aChain, $aClassNamePart, $aViewTypeCode = null, $aPluginCode = null) {
 		// reverse the chain
 		/** @var ComponentChainLink[] $chain */ $chain = [];
@@ -47,7 +50,7 @@ class ComponentResolver {
 			}
 		}
 
-		if ($this->environment->getVars()->get('logComponentResolution')) {
+		if ($this->logger && LogUtils::includes($this->logLevel, LogLevel::DEBUG)) {
 			$this->logger->debug(
 				"Resolved component '" . ($component ? $component['className'] : 'NULL') . "'.",
 				
@@ -64,22 +67,20 @@ class ComponentResolver {
 		return $component;
 	}
 	
-	public function __construct(EnvironmentInterface $aEnvironment, array $aOptions = null) {
-		$this->environment = $aEnvironment;
-		
+	public function __construct(array $aOptions = []) {
 		$options = array_replace([
 			'logger' => null,
-		], $aOptions ?: []);
-		
+			'logLevel' => null,
+		], $aOptions);
+
 		if ($options['logger']) {
-			if (!$options['logger'] instanceof LoggerInterface) throw new \Exception(
+			if (!($options['logger'] instanceof LoggerInterface)) throw new Exception(
 				"Option 'logger' must be an instance of \Solarfield\Ok\LoggerInterface."
 			);
-			
 			$this->logger = $options['logger'];
 		}
-		else {
-			$this->logger = $this->environment->getLogger();
-		}
+
+		$this->logLevel = $aOptions['logLevel'] !== null
+			? LogUtils::toRfc5424($aOptions['logLevel']) : LogLevel::WARNING;
 	}
 }

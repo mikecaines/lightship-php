@@ -17,7 +17,7 @@ class ViewPlugins {
 		
 		$plugin = null;
 
-		$component = $this->view->getController()->getComponentResolver()->resolveComponent(
+		$component = $this->view->getEnvironment()->getComponentResolver()->resolveComponent(
 			$this->view->getEnvironment()->getComponentChain($this->view->getCode()),
 			'ViewPlugin',
 			$this->view->getType(),

@@ -18,7 +18,7 @@ abstract class Controller implements ControllerInterface {
 		$moduleCode = $aContext->getRoute()->getModuleCode();
 		$options = $aContext->getRoute()->getControllerOptions();
 		
-		$component = (new ComponentResolver($aEnvironment))->resolveComponent(
+		$component = $aEnvironment->getComponentResolver()->resolveComponent(
 			$aEnvironment->getComponentChain($moduleCode),
 			'Controller',
 			null,
@@ -138,8 +138,7 @@ abstract class Controller implements ControllerInterface {
 	private $plugins;
 	private $proxy;
 	private $logger;
-	private $componentResolver;
-	
+
 	private function resolvePluginDependencies_step($plugin) {
 		$plugins = $this->getPlugins();
 		
@@ -346,16 +345,6 @@ abstract class Controller implements ControllerInterface {
 		return static::bail($this->getEnvironment(), $aEx);
 	}
 	
-	public function getComponentResolver() {
-		if (!$this->componentResolver) {
-			$this->componentResolver = new ComponentResolver($this->getEnvironment(), [
-				'logger' => $this->getLogger()->withName($this->getLogger()->getName() . '/componentResolver'),
-			]);
-		}
-		
-		return $this->componentResolver;
-	}
-	
 	public function getDefaultViewType() {
 		return $this->defaultViewType;
 	}
@@ -389,7 +378,7 @@ abstract class Controller implements ControllerInterface {
 	public function createModel() {
 		$code = $this->getCode();
 		
-		$component = $this->getComponentResolver()->resolveComponent(
+		$component = $this->getEnvironment()->getComponentResolver()->resolveComponent(
 			$this->getEnvironment()->getComponentChain($code),
 			'Model'
 		);
@@ -419,7 +408,7 @@ abstract class Controller implements ControllerInterface {
 	public function createView($aType) {
 		$code = $this->getCode();
 		
-		$component = $this->getComponentResolver()->resolveComponent(
+		$component = $this->getEnvironment()->getComponentResolver()->resolveComponent(
 			$this->getEnvironment()->getComponentChain($code),
 			'View',
 			$aType
@@ -497,7 +486,6 @@ abstract class Controller implements ControllerInterface {
 	
 	public function __construct(EnvironmentInterface $aEnvironment, $aCode, SourceContextInterface $aContext, $aOptions = []) {
 		$this->environment = $aEnvironment;
-		$this->componentResolver = new ComponentResolver($aEnvironment);
 		$this->context = $aContext;
 		$this->code = (string)$aCode;
 		

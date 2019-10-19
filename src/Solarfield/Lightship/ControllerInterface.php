@@ -48,11 +48,6 @@ interface ControllerInterface extends EventTargetInterface {
 	public function handleException(\Throwable $aEx) : DestinationContextInterface;
 	
 	/**
-	 * @return ComponentResolver
-	 */
-	public function getComponentResolver();
-	
-	/**
 	 * @return string|null
 	 */
 	public function getDefaultViewType();
