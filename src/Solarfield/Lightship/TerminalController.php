@@ -57,11 +57,8 @@ abstract class TerminalController extends Controller {
 	public function run(): DestinationContextInterface {
 		// connect the view
 		$view = $this->createView($this->getRequestedViewType());
-		$view->setController($this->getProxy());
-		$view->init();
 		$this->getInput()->mergeReverse($view->getInput());
 		$this->getHints()->mergeReverse($view->getHints());
-		$view->setModel($this->getModel());
 
 		$destinationContext = new TerminalDestinationContext();
 
@@ -104,8 +101,8 @@ abstract class TerminalController extends Controller {
 		return static::bail($this->getEnvironment(), $aEx);
 	}
 
-	public function __construct(EnvironmentInterface $aEnvironment, $aCode, SourceContextInterface $aContext, $aOptions = []) {
-		parent::__construct($aEnvironment, $aCode, $aContext, $aOptions);
+	public function __construct(EnvironmentInterface $aEnvironment, $aCode, ModelInterface $aModel, SourceContextInterface $aContext, $aOptions = []) {
+		parent::__construct($aEnvironment, $aCode, $aModel, $aContext, $aOptions);
 
 		$this->setDefaultViewType('Stdout');
 	}

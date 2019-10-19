@@ -61,11 +61,8 @@ abstract class WebController extends Controller {
 
 		// connect the view
 		$view = $this->createView($this->getRequestedViewType());
-		$view->setController($this->getProxy());
-		$view->init();
 		$this->getInput()->mergeReverse($view->getInput());
 		$this->getHints()->mergeReverse($view->getHints());
-		$view->setModel($this->getModel());
 
 		$destinationContext = $this->doTask($destinationContext);
 
@@ -136,8 +133,8 @@ abstract class WebController extends Controller {
 		return static::boot($this->getEnvironment(), $context);
 	}
 
-	public function __construct(EnvironmentInterface $aEnvironment, $aCode, SourceContextInterface $aContext, $aOptions = []) {
-		parent::__construct($aEnvironment, $aCode, $aContext, $aOptions);
+	public function __construct(EnvironmentInterface $aEnvironment, $aCode, ModelInterface $aModel, SourceContextInterface $aContext, $aOptions = []) {
+		parent::__construct($aEnvironment, $aCode, $aModel, $aContext, $aOptions);
 
 		$this->setDefaultViewType('Html');
 	}

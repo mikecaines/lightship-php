@@ -16,28 +16,34 @@ abstract class Controller implements ControllerInterface {
 	
 	static public function fromContext(EnvironmentInterface $aEnvironment, SourceContextInterface $aContext): ControllerInterface {
 		$moduleCode = $aContext->getRoute()->getModuleCode();
-		$options = $aContext->getRoute()->getControllerOptions();
-		
+
 		$component = $aEnvironment->getComponentResolver()->resolveComponent(
 			$aEnvironment->getComponentChain($moduleCode),
-			'Controller',
-			null,
-			null
+			'Model'
 		);
-		
-		if (!$component) {
-			throw new \Exception(
-				"Could not resolve Controller component for module '" . $moduleCode . "'."
-				. " No component class files could be found."
-			);
-		}
-		
-		/** @var Controller $controller */
-		$controller = new $component['className']($aEnvironment, $moduleCode, $aContext, $options);
+		if (!$component) throw new \Exception(
+			"Could not resolve Model component for module '" . $moduleCode . "'."
+			. " No component class files could be found."
+		);
+		/** @var ModelInterface $model */ $model = new $component['className']($aEnvironment, $moduleCode);
+		$model->init();
+
+		$component = $aEnvironment->getComponentResolver()->resolveComponent(
+			$aEnvironment->getComponentChain($moduleCode),
+			'Controller'
+		);
+		if (!$component) throw new \Exception(
+			"Could not resolve Controller component for module '" . $moduleCode . "'."
+			. " No component class files could be found."
+		);
+		/** @var ControllerInterface $controller */ $controller = new $component['className'](
+			$aEnvironment, $moduleCode, $model, $aContext, $aContext->getRoute()->getControllerOptions()
+		);
+		$controller->init();
 		
 		return $controller;
 	}
-	
+
 	static public function route(EnvironmentInterface $aEnvironment, SourceContextInterface $aContext): SourceContextInterface {
 		return $aContext;
 	}
@@ -62,9 +68,7 @@ abstract class Controller implements ControllerInterface {
 			}
 
 			$context = static::route($aEnvironment, $aContext);
-
 			$stubController = static::fromContext($aEnvironment, $context);
-			$stubController->init();
 
 			try {
 				$destinationContext = $stubController->bootDynamic($context);
@@ -192,10 +196,7 @@ abstract class Controller implements ControllerInterface {
 
 		/** @var Controller $tempController */
 		$tempController = null;
-		
-		$model = $this->createModel();
-		$model->init();
-		
+
 		//the temporary boot info passed along through the boot loop
 		//The only data/keys kept are moduleCode, nextStep, controllerOptions
 		$tempContext = $aContext;
@@ -225,7 +226,6 @@ abstract class Controller implements ControllerInterface {
 					if ($tempController) {
 						//tell it to create the target controller
 						$tempController = $tempController::fromContext($this->getEnvironment(), $tempContext);
-						$tempController->init();
 					}
 
 					//else we don't have a controller yet
@@ -240,12 +240,8 @@ abstract class Controller implements ControllerInterface {
 						else {
 							//tell the current controller to create the target controller
 							$tempController = $this::fromContext($this->getEnvironment(), $tempContext);
-							$tempController->init();
 						}
 					}
-
-					//attach the model to the new temp controller
-					$tempController->setModel($model);
 
 					//if we have routing to do
 					if ($tempContext->getRoute()->getNextStep() !== null || $loopCount == 0) {
@@ -353,38 +349,20 @@ abstract class Controller implements ControllerInterface {
 	public function getInput() {
 		return $this->getContext()->getInput();
 	}
-	
-	public function setModel(ModelInterface $aModel) {
-		$this->model = $aModel;
-	}
-	
+
 	/**
 	 * @return ModelInterface
 	 */
 	public function getModel() {
 		return $this->model;
 	}
-	
-	public function createModel() {
-		$code = $this->getCode();
-		
-		$component = $this->getEnvironment()->getComponentResolver()->resolveComponent(
-			$this->getEnvironment()->getComponentChain($code),
-			'Model'
-		);
-		
-		if (!$component) {
-			throw new \Exception(
-				"Could not resolve Model component for module '" . $code . "'."
-				. " No component class files could be found."
-			);
-		}
-		
-		$model = new $component['className']($this->getEnvironment(), $code);
-		
-		return $model;
-	}
-	
+
+	/**
+	 * Creates a view, connected to this controller, and its associated model.
+	 * @param string $aType
+	 * @return ViewInterface
+	 * @throws Exception
+	 */
 	public function createView($aType) {
 		$code = $this->getCode();
 		
@@ -393,15 +371,14 @@ abstract class Controller implements ControllerInterface {
 			'View',
 			$aType
 		);
-		
-		if (!$component) {
-			throw new \Exception(
-				"Could not resolve " . $aType . " View component for module '" . $code . "'."
-				. " No component class files could be found."
-			);
-		}
-		
-		$view = new $component['className']($this->getEnvironment(), $code);
+		if (!$component) throw new \Exception(
+			"Could not resolve " . $aType . " View component for module '" . $code . "'."
+			. " No component class files could be found."
+		);
+		/** @var ViewInterface $view */ $view = new $component['className'](
+			$this->getEnvironment(), $code, $this->getModel(), $this->getProxy()
+		);
+		$view->init();
 		
 		return $view;
 	}
@@ -454,8 +431,12 @@ abstract class Controller implements ControllerInterface {
 		$this->resolveOptions();
 	}
 	
-	public function __construct(EnvironmentInterface $aEnvironment, $aCode, SourceContextInterface $aContext, $aOptions = []) {
+	public function __construct(
+		EnvironmentInterface $aEnvironment, $aCode,
+		ModelInterface $aModel, SourceContextInterface $aContext, $aOptions = []
+	) {
 		$this->environment = $aEnvironment;
+		$this->model = $aModel;
 		$this->context = $aContext;
 		$this->code = (string)$aCode;
 		

@@ -6,8 +6,6 @@ use Solarfield\Ok\EventTargetInterface;
 interface ViewInterface extends EventTargetInterface {
 	public function getCode();
 
-	public function setModel(ModelInterface $aModel);
-
 	/**
 	 * @return ModelInterface|null
 	 */
@@ -22,8 +20,6 @@ interface ViewInterface extends EventTargetInterface {
 	 * @return Hints
 	 */
 	public function getHints();
-
-	public function setController(ControllerProxyInterface $aController);
 
 	/**
 	 * @return ControllerProxyInterface|null

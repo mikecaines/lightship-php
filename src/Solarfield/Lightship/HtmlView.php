@@ -283,8 +283,11 @@ abstract class HtmlView extends View {
 		return $aDestinationContext;
 	}
 
-	public function __construct(EnvironmentInterface $aEnvironment, string $aCode, $aOptions = []) {
+	public function __construct(
+		EnvironmentInterface $aEnvironment, string $aCode,
+		ModelInterface $aModel, ControllerProxyInterface $aController, $aOptions = []
+	) {
 		$this->type = 'Html';
-		parent::__construct($aEnvironment, $aCode, $aOptions);
+		parent::__construct($aEnvironment, $aCode, $aModel, $aController, $aOptions);
 	}
 }

@@ -3,7 +3,7 @@ namespace Solarfield\Lightship;
 
 use Solarfield\Ok\StructUtils;
 
-class Model implements ModelInterface {
+abstract class Model implements ModelInterface {
 	private $code;
 	private $data = [];
 	/** @var EnvironmentInterface */ private $environment;

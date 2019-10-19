@@ -68,16 +68,9 @@ interface ControllerInterface extends EventTargetInterface {
 	public function getInput();
 
 	/**
-	 * @return ModelInterface
-	 */
-	public function createModel();
-
-	/**
 	 * @return ModelInterface|null
 	 */
 	public function getModel();
-
-	public function setModel(ModelInterface $aModel);
 
 	/**
 	 * @param string $aType

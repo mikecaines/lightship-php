@@ -92,10 +92,6 @@ abstract class View implements ViewInterface {
 		return $this->plugins;
 	}
 	
-	public function setModel(ModelInterface $aModel) {
-		$this->model = $aModel;
-	}
-	
 	public function getModel() {
 		return $this->model;
 	}
@@ -109,11 +105,7 @@ abstract class View implements ViewInterface {
 		if (!$this->hints) $this->hints = new Hints();
 		return $this->hints;
 	}
-	
-	public function setController(ControllerProxyInterface $aController) {
-		$this->controller = $aController;
-	}
-	
+
 	public function getController() {
 		return $this->controller;
 	}
@@ -131,8 +123,13 @@ abstract class View implements ViewInterface {
 		$this->resolveHints();
 	}
 	
-	public function __construct(EnvironmentInterface $aEnvironment, string $aCode, $aOptions = []) {
+	public function __construct(
+		EnvironmentInterface $aEnvironment, string $aCode,
+		ModelInterface $aModel, ControllerProxyInterface $aController, $aOptions = []
+	) {
 		$this->environment = $aEnvironment;
+		$this->model = $aModel;
+		$this->controller = $aController;
 		
 		if ($this->getEnvironment()->getVars()->get('logComponentLifetimes')) {
 			$this->getEnvironment()->getLogger()->debug(get_class($this) . "[code=" . $aCode . "] was constructed");

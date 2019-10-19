@@ -19,9 +19,12 @@ class StdoutView extends View {
 		
 		$this->getEnvironment()->getStandardOutput()->addEventListener('standard-output', [$this, 'handleStandardOutput']);
 	}
-	
-	public function __construct(EnvironmentInterface $aEnvironment, string $aCode, $aOptions = []) {
+
+	public function __construct(
+		EnvironmentInterface $aEnvironment, string $aCode,
+		ModelInterface $aModel, ControllerProxyInterface $aController, $aOptions = []
+	) {
 		$this->type = 'Stdout';
-		parent::__construct($aEnvironment, $aCode, $aOptions);
+		parent::__construct($aEnvironment, $aCode, $aModel, $aController, $aOptions);
 	}
 }
