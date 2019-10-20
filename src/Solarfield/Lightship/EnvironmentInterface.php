@@ -3,9 +3,10 @@ declare(strict_types=1);
 
 namespace Solarfield\Lightship;
 
+use Solarfield\Ok\EventTargetInterface;
 use Solarfield\Ok\LoggerInterface;
 
-interface EnvironmentInterface {
+interface EnvironmentInterface extends EventTargetInterface {
 	public function getLogger(): LoggerInterface;
 	
 	public function getConfig(): Config;
