@@ -80,7 +80,8 @@ class ComponentResolver {
 			$this->logger = $options['logger'];
 		}
 
-		$this->logLevel = $aOptions['logLevel'] !== null
-			? LogUtils::toRfc5424($aOptions['logLevel']) : LogLevel::WARNING;
+		$this->logLevel = LogUtils::toRfc5424(
+			$aOptions['logLevel'] !== null ? $aOptions['logLevel'] : LogLevel::WARNING
+		);
 	}
 }
