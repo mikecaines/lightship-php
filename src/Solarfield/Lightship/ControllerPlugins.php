@@ -84,7 +84,7 @@ class ControllerPlugins {
 	/**
 	 * Gets the plugin implementing the specified interface, or throws if it is not found.
 	 * @param $aClass
-	 * @return ControllerPlugin|null
+	 * @return ControllerPlugin
 	 * @throws Exception
 	 */
 	public function expectByClass($aClass) {
