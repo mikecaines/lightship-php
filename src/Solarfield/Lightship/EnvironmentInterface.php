@@ -5,6 +5,7 @@ namespace Solarfield\Lightship;
 
 use Solarfield\Ok\EventTargetInterface;
 use Solarfield\Ok\LoggerInterface;
+use Throwable;
 
 interface EnvironmentInterface extends EventTargetInterface {
 	public function getLogger(): LoggerInterface;
@@ -27,4 +28,17 @@ interface EnvironmentInterface extends EventTargetInterface {
 	 * @return EnvironmentPlugins
 	 */
 	public function getPlugins();
+
+	public function route(SourceContextInterface $aContext) : SourceContextInterface;
+
+	public function boot(SourceContextInterface $aContext) : DestinationContextInterface;
+
+	/**
+	 * Will be called by ::boot() if an uncaught error occurs before a Controller is created.
+	 * Normally this is only called when in an unrecoverable error state.
+	 * @see ::handleException().
+	 * @param Throwable $aEx
+	 * @return DestinationContextInterface
+	 */
+	public function bail(Throwable $aEx) : DestinationContextInterface;
 }

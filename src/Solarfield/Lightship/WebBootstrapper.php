@@ -28,7 +28,7 @@ abstract class WebBootstrapper {
 
 		//boot the controller
 		/** @var WebDestinationContext $destinationContext */
-		$destinationContext = \App\Controller::boot($environment, $context);
+		$destinationContext = $environment->boot($context);
 
 		//send the http response
 		$response = $destinationContext->toResponse();

@@ -44,84 +44,6 @@ abstract class Controller implements ControllerInterface {
 		return $controller;
 	}
 
-	static public function route(EnvironmentInterface $aEnvironment, SourceContextInterface $aContext): SourceContextInterface {
-		return $aContext;
-	}
-	
-	static public function boot(EnvironmentInterface $aEnvironment, SourceContextInterface $aContext) : DestinationContextInterface {
-		try {
-			if ($aEnvironment->getVars()->get('logMemUsage')) {
-				$bytesUsed = memory_get_usage();
-				$bytesLimit = ini_get('memory_limit');
-
-				$aEnvironment->getLogger()->debug(
-					'mem[boot begin]: ' . ceil($bytesUsed/1024) . 'K/' . $bytesLimit
-					. ' ' . round($bytesUsed/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
-				);
-
-				unset($bytesUsed, $bytesLimit);
-			}
-
-			if ($aEnvironment->getVars()->get('logPaths')) {
-				$aEnvironment->getLogger()->debug('App dependencies file path: '. $aEnvironment->getVars()->get('appDependenciesFilePath'));
-				$aEnvironment->getLogger()->debug('App package file path: '. $aEnvironment->getVars()->get('appPackageFilePath'));
-			}
-
-			$context = static::route($aEnvironment, $aContext);
-			$stubController = static::fromContext($aEnvironment, $context);
-
-			try {
-				$destinationContext = $stubController->bootDynamic($context);
-			}
-			catch (Throwable $e) {
-				//if the boot loop was already recovered previously
-				if ($context->getBootRecoveryCount() > 0) {
-					//don't attempt to recover again, to avoid causing an infinite loop
-					throw new Exception(
-						"Unrecoverable boot loop error.",
-						0, $e
-					);
-				}
-
-				//let the stub controller handle the exception
-				$destinationContext = $stubController->handleException($e);
-			}
-
-			if ($aEnvironment->getVars()->get('logMemUsage')) {
-				$bytesUsed = memory_get_usage();
-				$bytesPeak = memory_get_peak_usage();
-				$bytesLimit = ini_get('memory_limit');
-
-				$aEnvironment->getLogger()->debug(
-					'mem[boot end]: ' . ceil($bytesUsed/1024) . 'K/' . $bytesLimit
-					. ' ' . round($bytesUsed/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
-				);
-
-				$aEnvironment->getLogger()->debug(
-					'mem-peak[boot end]: ' . ceil($bytesPeak/1024) . 'K/' . $bytesLimit
-					. ' ' . round($bytesPeak/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
-				);
-
-				unset($bytesUsed, $bytesPeak, $bytesLimit);
-
-				$bytesUsed = realpath_cache_size();
-				$bytesLimit = ini_get('realpath_cache_size');
-
-				$aEnvironment->getLogger()->debug(
-					'realpath-cache-size[boot end]: ' . (ceil($bytesUsed/1024)) . 'K/' . $bytesLimit
-					. ' ' . round($bytesUsed/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
-				);
-
-				unset($bytesUsed, $bytesLimit);
-			}
-		}
-		catch (Throwable $e) {
-			$destinationContext = static::bail($aEnvironment, $e);
-		}
-
-		return $destinationContext;
-	}
-
 	private $environment;
 	private $context;
 	private $code;
@@ -191,7 +113,7 @@ abstract class Controller implements ControllerInterface {
 
 	}
 	
-	public function bootDynamic(SourceContextInterface $aContext) : DestinationContextInterface {
+	public function boot(SourceContextInterface $aContext) : DestinationContextInterface {
 		$keepRouting = true;
 
 		/** @var Controller $tempController */
@@ -246,7 +168,7 @@ abstract class Controller implements ControllerInterface {
 					//if we have routing to do
 					if ($tempContext->getRoute()->getNextStep() !== null || $loopCount == 0) {
 						//tell the temp controller to process the route
-						$newContext = $tempController->routeDynamic($tempContext);
+						$newContext = $tempController->route($tempContext);
 
 						if ($this->getEnvironment()->getVars()->get('logRouting')) {
 							$this->getLogger()->debug(get_class($tempController) . ' routed from -> to: ' . MiscUtils::varInfo($tempContext->getRoute()) . ' -> ' . MiscUtils::varInfo($newContext->getRoute()));
@@ -295,7 +217,7 @@ abstract class Controller implements ControllerInterface {
 		return $tempController->run();
 	}
 
-	public function routeDynamic(SourceContextInterface $aContext): SourceContextInterface {
+	public function route(SourceContextInterface $aContext): SourceContextInterface {
 		$event = new ProcessRouteEvent('process-route', ['target' => $this], $aContext);
 
 		$this->dispatchEvent($event, [
@@ -321,14 +243,14 @@ abstract class Controller implements ControllerInterface {
 
 	/**
 	 * Will be called by ::boot() if an uncaught error occurs after a Controller is created.
-	 * Normally this is only called when ::routeDynamic() or ::run() fails.
+	 * Normally this is only called when ::route() or ::run() fails.
 	 * You can override this method, and attempt to boot another Controller for recovery purposes, etc.
 	 * @see ::bail().
 	 * @param Throwable $aEx
 	 * @return DestinationContextInterface
 	 */
 	public function handleException(Throwable $aEx) : DestinationContextInterface {
-		return static::bail($this->getEnvironment(), $aEx);
+		return $this->getEnvironment()->bail($aEx);
 	}
 	
 	public function getDefaultViewType() {

@@ -25,7 +25,7 @@ abstract class TerminalBootstrapper {
 
 		//boot the controller
 		/** @var TerminalDestinationContext $destinationContext */
-		$destinationContext = \App\Controller::boot($environment, $context);
+		$destinationContext = $environment->boot($context);
 
 		// terminate with the specified exit status
 		exit($destinationContext->getExitStatus());

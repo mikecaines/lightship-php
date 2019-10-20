@@ -8,8 +8,9 @@ use Solarfield\Ok\EventTargetTrait;
 use Solarfield\Ok\LoggerInterface;
 use Solarfield\Ok\Logger;
 use Solarfield\Ok\MiscUtils;
+use Throwable;
 
-class Environment implements EnvironmentInterface {
+abstract class Environment implements EnvironmentInterface {
 	use EventTargetTrait;
 
 	private $plugins;
@@ -122,6 +123,84 @@ class Environment implements EnvironmentInterface {
 		}
 
 		return $this->plugins;
+	}
+
+	public function route(SourceContextInterface $aContext): SourceContextInterface {
+		return $aContext;
+	}
+
+	public function boot(SourceContextInterface $aContext) : DestinationContextInterface {
+		try {
+			if ($this->getVars()->get('logMemUsage')) {
+				$bytesUsed = memory_get_usage();
+				$bytesLimit = ini_get('memory_limit');
+
+				$this->getLogger()->debug(
+					'mem[boot begin]: ' . ceil($bytesUsed/1024) . 'K/' . $bytesLimit
+					. ' ' . round($bytesUsed/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
+				);
+
+				unset($bytesUsed, $bytesLimit);
+			}
+
+			if ($this->getVars()->get('logPaths')) {
+				$this->getLogger()->debug('App dependencies file path: '. $this->getVars()->get('appDependenciesFilePath'));
+				$this->getLogger()->debug('App package file path: '. $this->getVars()->get('appPackageFilePath'));
+			}
+
+			$context = static::route($aContext);
+			$stubController = \App\Controller::fromContext($this, $context);
+
+			try {
+				$destinationContext = $stubController->boot($context);
+			}
+			catch (Throwable $e) {
+				//if the boot loop was already recovered previously
+				if ($context->getBootRecoveryCount() > 0) {
+					//don't attempt to recover again, to avoid causing an infinite loop
+					throw new Exception(
+						"Unrecoverable boot loop error.",
+						0, $e
+					);
+				}
+
+				//let the stub controller handle the exception
+				$destinationContext = $stubController->handleException($e);
+			}
+
+			if ($this->getVars()->get('logMemUsage')) {
+				$bytesUsed = memory_get_usage();
+				$bytesPeak = memory_get_peak_usage();
+				$bytesLimit = ini_get('memory_limit');
+
+				$this->getLogger()->debug(
+					'mem[boot end]: ' . ceil($bytesUsed/1024) . 'K/' . $bytesLimit
+					. ' ' . round($bytesUsed/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
+				);
+
+				$this->getLogger()->debug(
+					'mem-peak[boot end]: ' . ceil($bytesPeak/1024) . 'K/' . $bytesLimit
+					. ' ' . round($bytesPeak/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
+				);
+
+				unset($bytesUsed, $bytesPeak, $bytesLimit);
+
+				$bytesUsed = realpath_cache_size();
+				$bytesLimit = ini_get('realpath_cache_size');
+
+				$this->getLogger()->debug(
+					'realpath-cache-size[boot end]: ' . (ceil($bytesUsed/1024)) . 'K/' . $bytesLimit
+					. ' ' . round($bytesUsed/\Solarfield\Ok\PhpUtils::parseShorthandBytes($bytesLimit)*100, 2) . '%'
+				);
+
+				unset($bytesUsed, $bytesLimit);
+			}
+		}
+		catch (Throwable $e) {
+			$destinationContext = static::bail($e);
+		}
+
+		return $destinationContext;
 	}
 
 	public function init() {

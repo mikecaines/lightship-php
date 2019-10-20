@@ -11,37 +11,6 @@ use Throwable;
  * @method TerminalSourceContext getContext
  */
 abstract class TerminalController extends Controller {
-	static public function bail(EnvironmentInterface $aEnvironment, \Throwable $aException): DestinationContextInterface {
-		$aEnvironment->getLogger()->error($aException->getMessage(), [
-			'exception' => $aException,
-		]);
-
-		$aEnvironment->getStandardOutput()->error('FATAL ERROR: ' . $aException->getMessage());
-
-		return new TerminalDestinationContext(1);
-	}
-
-	static public function route(EnvironmentInterface $aEnvironment, SourceContextInterface $aContext): SourceContextInterface {
-		$context = parent::route($aEnvironment, $aContext);
-
-		if (($inputModule = $context->getRoute()->getNextStep()) !== null) {
-			$availableModules = array_filter(
-				scandir($aEnvironment->getVars()->get('appPackageFilePath') . '/App/Modules'),
-				function ($name) {
-					return preg_match('/[a-z0-9]+/i', $name) == true;
-				}
-			);
-
-			if (in_array($inputModule, $availableModules, true)) {
-				$context->setRoute([
-					'moduleCode' => (string)$inputModule,
-				]);
-			}
-		}
-
-		return $context;
-	}
-
 	protected function executeScript() {
 		//NOTE: override this method to do your module-specific stuff
 	}
@@ -98,7 +67,7 @@ abstract class TerminalController extends Controller {
 	}
 
 	public function handleException(Throwable $aEx) : DestinationContextInterface {
-		return static::bail($this->getEnvironment(), $aEx);
+		return $this->getEnvironment()->bail($aEx);
 	}
 
 	public function __construct(EnvironmentInterface $aEnvironment, $aCode, ModelInterface $aModel, SourceContextInterface $aContext, $aOptions = []) {

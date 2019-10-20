@@ -1,11 +1,18 @@
 <?php
 namespace Solarfield\Lightship;
 
+use Throwable;
+
 abstract class WebEnvironment extends Environment {
 	private $stdoutMessages = [];
 
 	public function takeBufferedStdoutMessages() : array {
 		return array_splice($this->stdoutMessages, 0);
+	}
+
+	public function bail(Throwable $aEx) : DestinationContextInterface {
+		$this->getLogger()->error("Bailed.", ['exception'=>$aEx]);
+		return new WebDestinationContext(500);
 	}
 
 	public function __construct($aOptions) {

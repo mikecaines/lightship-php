@@ -14,19 +14,6 @@ use Throwable;
  * @method WebSourceContext getContext
  */
 abstract class WebController extends Controller {
-	/**
-	 * Will be called by ::boot() if an uncaught error occurs before a Controller is created.
-	 * Normally this is only called when in an unrecoverable error state.
-	 * @see ::handleException().
-	 * @param EnvironmentInterface $aEnvironment
-	 * @param Throwable $aEx
-	 * @return DestinationContextInterface
-	 */
-	static public function bail(EnvironmentInterface $aEnvironment, Throwable $aEx) : DestinationContextInterface {
-		$aEnvironment->getLogger()->error("Bailed.", ['exception'=>$aEx]);
-		return new WebDestinationContext(500);
-	}
-
 	public function getRequestedViewType() {
 		$type = trim($this->getInput()->getAsString('app.viewType.code'));
 
@@ -130,7 +117,7 @@ abstract class WebController extends Controller {
 			'bootRecoveryCount' => $this->getContext()->getBootRecoveryCount() + 1,
 		]);
 		
-		return static::boot($this->getEnvironment(), $context);
+		return $this->getEnvironment()->boot($context);
 	}
 
 	public function __construct(EnvironmentInterface $aEnvironment, $aCode, ModelInterface $aModel, SourceContextInterface $aContext, $aOptions = []) {
