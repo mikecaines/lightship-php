@@ -21,4 +21,9 @@ interface EnvironmentInterface {
 	public function getStandardOutput(): StandardOutput;
 	
 	public function getVars(): Options;
+
+	/**
+	 * @return EnvironmentPlugins
+	 */
+	public function getPlugins();
 }

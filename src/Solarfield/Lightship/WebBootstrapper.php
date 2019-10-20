@@ -21,6 +21,7 @@ abstract class WebBootstrapper {
 			'projectPackageFilePath' => $aOptions['projectPackageFilePath'],
 			'appPackageFilePath' => $aOptions['appPackageFilePath'],
 		]);
+		$environment->init();
 
 		// create the boot context (representing the current http request)
 		$context = WebSourceContext::fromRequest(ServerRequest::fromGlobals());

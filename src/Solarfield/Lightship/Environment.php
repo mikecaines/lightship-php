@@ -4,11 +4,15 @@ namespace Solarfield\Lightship;
 use ErrorException;
 use Exception;
 use Psr\Log\LogLevel;
+use Solarfield\Ok\EventTargetTrait;
 use Solarfield\Ok\LoggerInterface;
 use Solarfield\Ok\Logger;
 use Solarfield\Ok\MiscUtils;
 
 class Environment implements EnvironmentInterface {
+	use EventTargetTrait;
+
+	private $plugins;
 	private $logger;
 	private $standardOutput;
 	private $vars;
@@ -42,13 +46,17 @@ class Environment implements EnvironmentInterface {
 		]);
 	}
 
-	public function createComponentResolver() : ComponentResolver {
+	protected function createComponentResolver() : ComponentResolver {
 		return new ComponentResolver([
 			'logger' => $this->getVars()->get('logComponentResolution')
 				? $this->getLogger()->withName($this->getLogger()->getName() . '/componentResolver') : null,
 
 			'logLevel' => $this->getVars()->get('loggingLevel'),
 		]);
+	}
+
+	protected function resolvePlugins() {
+
 	}
 
 	public function isDevModeEnabled() : bool {
@@ -62,7 +70,7 @@ class Environment implements EnvironmentInterface {
 		return $this->config;
 	}
 	
-	public function getComponentChain($aModuleCode): ComponentChain {
+	public function getComponentChain($aModuleCode = null): ComponentChain {
 		// create the base chain
 		if (!$this->chain) $this->chain = $this->createComponentChain();
 		
@@ -106,6 +114,18 @@ class Environment implements EnvironmentInterface {
 		}
 		
 		return $this->vars;
+	}
+
+	public function getPlugins() {
+		if (!$this->plugins) {
+			$this->plugins = new EnvironmentPlugins($this);
+		}
+
+		return $this->plugins;
+	}
+
+	public function init() {
+		$this->resolvePlugins();
 	}
 	
 	public function __construct($aOptions) {

@@ -18,6 +18,7 @@ abstract class TerminalBootstrapper {
 			'projectPackageFilePath' => $aOptions['projectPackageFilePath'],
 			'appPackageFilePath' => $aOptions['appPackageFilePath'],
 		]);
+		$environment->init();
 
 		// create the boot context (representing the current invocation of the script)
 		$context = TerminalSourceContext::fromGlobals();
