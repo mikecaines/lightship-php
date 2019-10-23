@@ -4,6 +4,7 @@ namespace Solarfield\Lightship;
 use ErrorException;
 use Exception;
 use Psr\Log\LogLevel;
+use Solarfield\Lightship\Events\ProcessRouteEvent;
 use Solarfield\Ok\EventTargetTrait;
 use Solarfield\Ok\LoggerInterface;
 use Solarfield\Ok\Logger;
@@ -57,6 +58,10 @@ abstract class Environment implements EnvironmentInterface {
 	}
 
 	protected function resolvePlugins() {
+
+	}
+
+	protected function onProcessRoute(ProcessRouteEvent $aEvt) {
 
 	}
 
@@ -126,6 +131,14 @@ abstract class Environment implements EnvironmentInterface {
 	}
 
 	public function route(SourceContextInterface $aContext): SourceContextInterface {
+		$event = new ProcessRouteEvent('process-route', ['target' => $this], $aContext);
+
+		$this->dispatchEvent($event, [
+			'listener' => [$this, 'onProcessRoute'],
+		]);
+
+		$this->dispatchEvent($event);
+
 		return $aContext;
 	}
 
