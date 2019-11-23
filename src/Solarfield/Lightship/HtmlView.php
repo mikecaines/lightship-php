@@ -131,9 +131,6 @@ abstract class HtmlView extends View {
 		ob_start();
 
 		?>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-		<meta name="viewport" content="width=device-width, user-scalable=no"/>
-
 		<title><?php $this->out($this->createTitle()); ?></title>
 		<?php
 
