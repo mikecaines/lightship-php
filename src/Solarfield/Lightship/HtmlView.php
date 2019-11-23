@@ -113,7 +113,7 @@ abstract class HtmlView extends View {
 
 		?><!DOCTYPE html>
 
-		<html>
+		<html lang="en">
 			<head><?php echo($this->createHeadContent()); ?></head>
 
 			<body>
