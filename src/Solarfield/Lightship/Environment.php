@@ -2,7 +2,6 @@
 namespace Solarfield\Lightship;
 
 use Exception;
-use Solarfield\Ok\MiscUtils;
 use Solarfield\Ok\StructUtils;
 
 abstract class Environment extends \Solarfield\Batten\Environment {
@@ -25,7 +24,8 @@ abstract class Environment extends \Solarfield\Batten\Environment {
 	static public function init($aOptions) {
 		parent::init($aOptions);
 
-		static::getVars()->add('requestId', MiscUtils::guid());
+		// we use 18-bytes/36-chars to match a uuid/guid, which is what this value used to be generated from
+		static::getVars()->add('requestId', bin2hex(random_bytes(18)));
 
 
 		//set the project package file path
