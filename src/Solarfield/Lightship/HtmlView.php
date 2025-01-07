@@ -198,7 +198,7 @@ abstract class HtmlView extends View {
 	}
 
 	public function enc($aValue) {
-		return htmlspecialchars($aValue, ENT_COMPAT|ENT_XML1|ENT_SUBSTITUTE, 'UTF-8');
+		return htmlspecialchars((string)$aValue, ENT_COMPAT|ENT_XML1|ENT_SUBSTITUTE, 'UTF-8');
 	}
 
 	public function out($aValue) {
